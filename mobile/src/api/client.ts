@@ -1,11 +1,8 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
 
-// User's LAN IP for Expo Go device testing + localhost fallback for simulator/web
-export const API_BASE_URL =
-  Platform.OS === 'web'
-    ? 'http://localhost:4000'
-    : 'http://172.17.206.44:4000';
+// Production Render backend live URL + localhost fallback for development
+export const API_BASE_URL = 'https://hemabridge.onrender.com';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
