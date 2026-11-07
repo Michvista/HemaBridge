@@ -9,7 +9,7 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  timeout: 45000, // 45 seconds to gracefully handle Render free-tier wake-up
 });
 
 let currentAuthToken: string | null = null;

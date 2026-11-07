@@ -39,6 +39,9 @@ export class DonorProfile {
   @Column({ default: 0 })
   badgeEarnedCount: number;
 
+  @Column({ default: 1 })
+  totalDonations: number;
+
   @OneToOne(() => User, (user) => user.donorProfile, { onDelete: 'CASCADE' })
   @JoinColumn()
   user: User;

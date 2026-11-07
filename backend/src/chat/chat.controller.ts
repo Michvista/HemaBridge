@@ -56,4 +56,9 @@ export class ChatController {
   async markRead(@Request() req: any, @Param('otherUserId') otherUserId: string) {
     return this.chatService.markAsRead(req.user.id, otherUserId);
   }
+
+  @Post('clear-all')
+  async clearMessages() {
+    return this.chatService.clearAllMessages();
+  }
 }

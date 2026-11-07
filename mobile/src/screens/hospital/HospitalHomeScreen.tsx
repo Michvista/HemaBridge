@@ -12,34 +12,30 @@ import { apiClient } from '../../api/client';
 import { HospitalProfile } from '../../types';
 import {
   Hospital,
-  Activity,
-  Pin,
   Clock,
+  Pin,
+  WarningTriangle,
+  Activity,
+  User as UserIcon,
   Shield,
-  Heart,
-  Medal,
 } from '../../components/Icons';
 
-export const HospitalHomeScreen: React.FC = () => {
+export const HospitalHomeScreen: React.FC<{ navigation: any }> = ({
+  navigation,
+}) => {
   const { user } = useAuth();
-  const [hospital, setHospital] = useState<HospitalProfile | null>(null);
-  const [isDeskOpen, setIsDeskOpen] = useState<boolean>(true);
-  const [requestDonorsActive, setRequestDonorsActive] = useState<boolean>(true);
-
-  useEffect(() => {
-    loadHospitalProfile();
-  }, []);
-
-  const loadHospitalProfile = async () => {
-    try {
-      const res = await apiClient.get('/hospitals/my-profile');
-      setHospital(res.data);
-      setIsDeskOpen(res.data.isDeskOpen);
-      setRequestDonorsActive(res.data.requestDonorsActive);
-    } catch (err) {
-      console.log('Error loading hospital profile:', err);
-    }
-  };
+  const hospital = user?.hospitalProfile;
+  const [isDeskOpen, setIsDeskOpen] = useState<boolean>(
+    hospital?.isDeskOpen ?? true,
+  );
+  const [requestDonorsActive, setRequestDonorsActive] = useState<boolean>(
+    hospital?.requestDonorsActive ?? true,
+  );
+  const [stats, setStats] = useState({
+    activeShortages: 3,
+    intakeQueueCount: 4,
+    verifiedUnitsCollected: 128,
+  });
 
   const handleToggleDesk = async (value: boolean) => {
     setIsDeskOpen(value);
@@ -47,11 +43,11 @@ export const HospitalHomeScreen: React.FC = () => {
       await apiClient.patch('/hospitals/status', { isDeskOpen: value });
     } catch (err) {
       setIsDeskOpen(!value);
-      Alert.alert('Error', 'Unable to update desk status.');
+      Alert.alert('Error', 'Unable to update donation desk status.');
     }
   };
 
-  const handleToggleRequestDonors = async (value: boolean) => {
+  const handleToggleRequest = async (value: boolean) => {
     setRequestDonorsActive(value);
     try {
       await apiClient.patch('/hospitals/status', { requestDonorsActive: value });
@@ -67,125 +63,154 @@ export const HospitalHomeScreen: React.FC = () => {
       contentContainerStyle={{ flexGrow: 1, paddingBottom: 70 }}
       showsVerticalScrollIndicator={false}
     >
-      {/* Hospital Hero Banner */}
-      <View className="bg-emerald-950 rounded-3xl p-5 mb-4 shadow-md">
+      {/* Hospital Clinical Banner */}
+      <View className="bg-white rounded-3xl p-5 mb-4 border border-slate-200 shadow-sm">
         <View className="flex-row items-center justify-between mb-2">
           <View className="flex-row items-center">
-            <View className="w-10 h-10 rounded-2xl bg-white/10 items-center justify-center mr-3">
-              <Hospital color="#ffffff" height={22} width={22} strokeWidth={2.5} />
+            <View className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-200 items-center justify-center mr-3">
+              <Hospital color="#059669" height={22} width={22} strokeWidth={2.5} />
             </View>
             <View>
-              <Text className="text-white font-extrabold text-base">
-                {hospital?.name || 'Hospital Clinical Portal'}
+              <Text className="text-slate-900 font-black text-base">
+                {hospital?.name || 'Hospital Clinical Desk'}
               </Text>
-              <Text className="text-emerald-200 text-xs">
+              <Text className="text-slate-500 text-xs">
                 {hospital?.address || 'Idi-Araba, Surulere, Lagos'}
               </Text>
             </View>
           </View>
+
+          <View
+            className={`px-3 py-1 rounded-full border ${
+              isDeskOpen
+                ? 'bg-emerald-50 border-emerald-200'
+                : 'bg-rose-50 border-rose-200'
+            }`}
+          >
+            <Text
+              className={`text-[10px] font-black ${
+                isDeskOpen ? 'text-emerald-800' : 'text-rose-800'
+              }`}
+            >
+              {isDeskOpen ? 'DESK OPEN' : 'DESK CLOSED'}
+            </Text>
+          </View>
         </View>
 
-        <Text className="text-emerald-100/90 text-xs mt-2 leading-5">
-          Licensed Transfusion Partner • Lic: {hospital?.operatingLicence || 'HEFAMAA-LG-001'}
+        <Text className="text-slate-500 text-xs mt-2 leading-5">
+          Licensed Transfusion Center • Accreditation Lic: <Text className="font-mono text-slate-700 font-bold">{hospital?.operatingLicence || 'HEFAMAA-LG-001'}</Text>
         </Text>
       </View>
 
-      {/* Desk Control Toggles */}
-      <Text className="text-sm font-extrabold text-slate-900 mb-2">
+      {/* Donation Desk Controls */}
+      <Text className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2">
         Donation Desk Controls
       </Text>
 
-      <View className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm mb-4">
+      <View className="bg-white rounded-3xl p-4 border border-slate-200 shadow-sm mb-4">
+        {/* Desk Open/Closed */}
         <View className="flex-row items-center justify-between py-2 border-b border-slate-100">
           <View className="flex-1 mr-3">
             <Text className="font-extrabold text-slate-900 text-sm">
-              Donation Desk Status
+              Donation Desk Availability
             </Text>
             <Text className="text-xs text-slate-500 mt-0.5">
               {isDeskOpen
-                ? 'Desk is Open for screened voluntary donors'
-                : 'Desk is Closed to external walk-in donors'}
+                ? 'Desk is Open for clinical appointments and walk-in voluntary donors'
+                : 'Desk is currently Closed to voluntary donors'}
             </Text>
           </View>
           <Switch
             value={isDeskOpen}
             onValueChange={handleToggleDesk}
-            trackColor={{ false: '#cbd5e1', true: '#10b981' }}
+            trackColor={{ false: '#cbd5e1', true: '#059669' }}
             thumbColor="#ffffff"
           />
         </View>
 
+        {/* Shortage Broadcast */}
         <View className="flex-row items-center justify-between py-2 pt-3">
           <View className="flex-1 mr-3">
             <Text className="font-extrabold text-slate-900 text-sm">
-              Urgent Donor Broadcast
+              Emergency Shortage Broadcast Radar
             </Text>
             <Text className="text-xs text-slate-500 mt-0.5">
               {requestDonorsActive
-                ? 'Visible on Hemabridge matching radar for needed blood groups'
-                : 'Broadcast muted'}
+                ? 'Actively broadcasting O+, O-, A- urgent shortages to nearby donors'
+                : 'Shortage broadcast is currently paused'}
             </Text>
           </View>
           <Switch
             value={requestDonorsActive}
-            onValueChange={handleToggleRequestDonors}
-            trackColor={{ false: '#cbd5e1', true: '#10b981' }}
+            onValueChange={handleToggleRequest}
+            trackColor={{ false: '#cbd5e1', true: '#be123c' }}
             thumbColor="#ffffff"
           />
         </View>
       </View>
 
-      {/* Hospital Stats Grid */}
-      <Text className="text-sm font-extrabold text-slate-900 mb-2">
-        Clinical Activity Overview
-      </Text>
-
-      <View className="flex-row space-x-3 mb-4">
-        <View className="flex-1 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mr-2">
-          <Text className="text-2xl font-black text-emerald-700">18</Text>
-          <Text className="text-xs font-bold text-slate-800 mt-1">
-            Completed Units
-          </Text>
-          <Text className="text-[10px] text-slate-400">This month</Text>
+      {/* Hospital Shortage Alert Panel */}
+      <View className="bg-rose-50 border border-rose-200 rounded-3xl p-4 mb-4">
+        <View className="flex-row items-center justify-between mb-2">
+          <View className="flex-row items-center">
+            <WarningTriangle color="#990011" height={18} width={18} strokeWidth={2.5} />
+            <Text className="text-xs font-black text-[#990011] uppercase tracking-wider ml-1.5">
+              Current Critical Shortage
+            </Text>
+          </View>
+          <View className="bg-rose-100 px-2 py-0.5 rounded-full">
+            <Text className="text-[10px] font-black text-rose-800">DEFICIT</Text>
+          </View>
         </View>
 
-        <View className="flex-1 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mr-2">
-          <Text className="text-2xl font-black text-amber-600">4</Text>
-          <Text className="text-xs font-bold text-slate-800 mt-1">
-            Screenings Set
-          </Text>
-          <Text className="text-[10px] text-slate-400">Scheduled</Text>
-        </View>
-
-        <View className="flex-1 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-          <Text className="text-2xl font-black text-rose-700">6</Text>
-          <Text className="text-xs font-bold text-slate-800 mt-1">
-            Emergency Calls
-          </Text>
-          <Text className="text-[10px] text-slate-400">Active matches</Text>
-        </View>
-      </View>
-
-      {/* Currently In-Demand Blood Types */}
-      <View className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm mb-6">
-        <Text className="font-extrabold text-slate-900 text-sm mb-1">
-          Currently In-Demand Groups at LUTH
+        <Text className="text-xs text-slate-700 leading-4">
+          Red alert broadcasted to Hemabridge network:
         </Text>
-        <Text className="text-xs text-slate-500 mb-3">
-          Donors with these groups will see high-priority alerts in their feed:
-        </Text>
-
-        <View className="flex-row flex-wrap">
-          {['O+', 'O-', 'A-'].map((type, i) => (
+        <View className="flex-row gap-2 mt-2">
+          {['O+', 'O-', 'A-'].map((type) => (
             <View
-              key={i}
-              className="bg-rose-50 border border-rose-200 px-3.5 py-1.5 rounded-xl mr-2 mb-2"
+              key={type}
+              className="bg-white border border-rose-300 px-3 py-1.5 rounded-xl shadow-xs"
             >
-              <Text className="text-rose-900 font-extrabold text-sm">{type}</Text>
+              <Text className="text-xs font-black text-[#990011]">{type}</Text>
             </View>
           ))}
         </View>
       </View>
+
+      {/* Console Stats */}
+      <Text className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2">
+        Clinical Activity Overview
+      </Text>
+
+      <View className="flex-row gap-3 mb-4">
+        <View className="flex-1 bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+          <Text className="text-2xl font-black text-slate-900">
+            {stats.verifiedUnitsCollected}
+          </Text>
+          <Text className="text-[11px] font-semibold text-slate-500 mt-0.5">
+            Verified Units Collected
+          </Text>
+        </View>
+
+        <View className="flex-1 bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+          <Text className="text-2xl font-black text-emerald-700">
+            {stats.intakeQueueCount}
+          </Text>
+          <Text className="text-[11px] font-semibold text-slate-500 mt-0.5">
+            Awaiting Lab Screening
+          </Text>
+        </View>
+      </View>
+
+      <TouchableOpacity
+        onPress={() => navigation.navigate('Queue')}
+        className="bg-slate-900 py-3.5 rounded-2xl items-center shadow"
+      >
+        <Text className="text-white font-black text-xs">
+          Open Clinical Screening Queue →
+        </Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 };

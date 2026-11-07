@@ -55,6 +55,24 @@ export class ApplicationsController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @Post(':id/evaluate')
+  async evaluateScreening(
+    @Param('id') id: string,
+    @Body()
+    body: {
+      decision: 'passed' | 'failed';
+      clinicalNotes?: string;
+      hemoglobin?: string;
+      viralScreeningClear?: boolean;
+      rating: number;
+      ratingFeedback?: string;
+      unitsCollected?: number;
+    },
+  ) {
+    return this.applicationsService.evaluateScreening(id, body);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Post(':id/complete')
   async completeDonation(@Param('id') id: string) {
     return this.applicationsService.completeDonationAndAwardBadge(id);

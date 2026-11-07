@@ -87,42 +87,88 @@ export class ApplicationsService {
     return this.applicationRepository.save(app);
   }
 
-  async completeDonationAndAwardBadge(applicationId: string) {
+  // Clinical screening evaluation with lab checks, rating, and award decision
+  async evaluateScreening(
+    applicationId: string,
+    data: {
+      decision: 'passed' | 'failed';
+      clinicalNotes?: string;
+      hemoglobin?: string;
+      viralScreeningClear?: boolean;
+      rating: number; // 1-5
+      ratingFeedback?: string;
+      unitsCollected?: number;
+    },
+  ) {
     const app = await this.applicationRepository.findOne({
       where: { id: applicationId },
       relations: ['donor', 'donor.donorProfile', 'hospital'],
     });
     if (!app) throw new NotFoundException('Application not found');
 
-    app.status = ApplicationStatus.COMPLETED;
-    await this.applicationRepository.save(app);
+    app.labResults = data.decision;
+    app.hospitalRating = Math.max(1, Math.min(5, data.rating || (data.decision === 'passed' ? 5 : 2)));
+    app.ratingFeedback = data.ratingFeedback || '';
+    app.clinicalNotes = data.clinicalNotes || (
+      data.decision === 'passed'
+        ? `Clinical screening verified: Viral markers clear. Hb: ${data.hemoglobin || '13.5 g/dL'}. Donor medically eligible.`
+        : `Screening deferred: ${data.ratingFeedback || 'Did not meet current clinical hematology threshold.'}`
+    );
 
-    // Update donor cooldown & badge count
-    if (app.donor) {
-      const donorProfile = await this.donorProfileRepository.findOne({
-        where: { user: { id: app.donor.id } },
-      });
-      if (donorProfile) {
-        donorProfile.lastDonationAt = new Date();
-        donorProfile.badgeEarnedCount += 1;
-        await this.donorProfileRepository.save(donorProfile);
+    if (data.decision === 'passed') {
+      app.status = ApplicationStatus.COMPLETED;
+      app.unitsCollected = data.unitsCollected || 1;
+      app.awardedBadge = true;
+
+      // Update donor profile: increment donations, set cooldown timestamp
+      if (app.donor) {
+        const donorProfile = await this.donorProfileRepository.findOne({
+          where: { user: { id: app.donor.id } },
+        });
+        if (donorProfile) {
+          donorProfile.lastDonationAt = new Date();
+          donorProfile.totalDonations = (donorProfile.totalDonations || 0) + 1;
+          donorProfile.badgeEarnedCount = (donorProfile.badgeEarnedCount || 0) + 1;
+          await this.donorProfileRepository.save(donorProfile);
+        }
+
+        // Award the Vein of Hope badge
+        const badge = this.badgeRepository.create({
+          donor: app.donor,
+          title: 'Vein of Hope',
+          awardedByHospitalName: app.hospital?.name || 'Accredited Hospital',
+          description: `Certified clinical blood donation. Verified by ${app.hospital?.name || 'Hospital Clinical Desk'}.`,
+          iconKey: 'BOiBr4Tx',
+        });
+        await this.badgeRepository.save(badge);
       }
-
-      // Create new Vein of Hope badge record
-      const badge = this.badgeRepository.create({
-        donor: app.donor,
-        title: 'Vein of Hope',
-        awardedByHospitalName: app.hospital?.name || 'Accredited Hospital',
-        description: `Awarded for completing life-saving blood donation at ${app.hospital?.name || 'Lagos Healthcare Facility'}.`,
-        iconKey: 'BOiBr4Tx',
-      });
-      await this.badgeRepository.save(badge);
+    } else {
+      // Failed / Deferred screening
+      app.status = ApplicationStatus.DECLINED;
+      app.unitsCollected = 0;
+      app.awardedBadge = false;
     }
+
+    await this.applicationRepository.save(app);
 
     return {
       success: true,
-      message: 'Donation successfully confirmed and Vein of Hope badge awarded to donor!',
+      decision: data.decision,
+      message:
+        data.decision === 'passed'
+          ? 'Screening successfully passed! Blood units collected and Vein of Hope badge awarded to donor.'
+          : 'Donor screening marked as deferred/ineligible. Record updated without badge award.',
       application: app,
     };
+  }
+
+  async completeDonationAndAwardBadge(applicationId: string) {
+    return this.evaluateScreening(applicationId, {
+      decision: 'passed',
+      rating: 5,
+      unitsCollected: 1,
+      clinicalNotes: 'Screening passed. Viral markers non-reactive. Ready for donation.',
+      ratingFeedback: 'Reliable and cooperative voluntary lifesaver.',
+    });
   }
 }

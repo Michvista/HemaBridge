@@ -18,6 +18,7 @@ interface ChatContextType {
     applicationId?: string,
   ) => Promise<void>;
   markAsRead: (otherUserId: string) => Promise<void>;
+  clearAllMessages: () => Promise<void>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -33,19 +34,24 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const unreadTotal = conversations.reduce((acc, c) => acc + c.unreadCount, 0);
 
-  // Setup WebSocket listeners
+  // Setup WebSocket listeners with strict deduplication
   useEffect(() => {
     if (!user?.id || !token) return;
 
     const socket = getSocket(user.id);
 
     const handleNewMessage = (msg: ChatMessage) => {
-      // If we are currently in this conversation, append message
+      // If we are currently chatting with this user, append only if not already present
       if (
         activeOtherUserId &&
-        (msg.sender.id === activeOtherUserId || msg.receiver.id === activeOtherUserId)
+        (msg.sender?.id === activeOtherUserId || msg.receiver?.id === activeOtherUserId)
       ) {
-        setActiveMessages((prev) => [...prev, msg]);
+        setActiveMessages((prev) => {
+          if (prev.some((m) => m.id === msg.id)) {
+            return prev;
+          }
+          return [...prev, msg];
+        });
         markAsRead(activeOtherUserId);
       }
       loadConversations();
@@ -79,7 +85,16 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     setActiveOtherUserId(otherUserId);
     try {
       const res = await apiClient.get(`/chat/messages/${otherUserId}`);
-      setActiveMessages(res.data);
+      // Deduplicate fetched messages
+      const uniqueMessages: ChatMessage[] = [];
+      const seenIds = new Set<string>();
+      for (const m of res.data) {
+        if (!seenIds.has(m.id)) {
+          seenIds.add(m.id);
+          uniqueMessages.push(m);
+        }
+      }
+      setActiveMessages(uniqueMessages);
 
       if (user?.id) {
         const socket = getSocket(user.id);
@@ -103,38 +118,39 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     requestId?: string,
     applicationId?: string,
   ) => {
-    if (!user?.id) return;
+    if (!user?.id || !content.trim()) return;
 
-    const socket = getSocket(user.id);
-    const payload = {
-      senderId: user.id,
-      receiverId,
-      content,
-      requestId,
-      applicationId,
-    };
-
-    // Emit via WebSocket for instant low-latency delivery
-    socket.emit('sendMessage', payload, (ackMessage: ChatMessage) => {
-      if (ackMessage) {
-        setActiveMessages((prev) => [...prev, ackMessage]);
-      }
-    });
-
-    // Also fallback to REST if needed
+    // Send via REST endpoint for guaranteed persistence and single emission
     try {
       const res = await apiClient.post('/chat/send', {
         receiverId,
-        content,
+        content: content.trim(),
         requestId,
         applicationId,
       });
-      if (!activeMessages.some((m) => m.id === res.data.id)) {
-        setActiveMessages((prev) => [...prev, res.data]);
+
+      const savedMessage = res.data;
+      if (savedMessage && savedMessage.id) {
+        setActiveMessages((prev) => {
+          if (prev.some((m) => m.id === savedMessage.id)) {
+            return prev;
+          }
+          return [...prev, savedMessage];
+        });
       }
       loadConversations();
     } catch (err) {
-      console.log('Error sending message via REST fallback:', err);
+      console.log('Error sending message via REST:', err);
+      // Fallback local append for immediate responsive feel if offline
+      const tempMsg: ChatMessage = {
+        id: `local-${Date.now()}-${Math.random()}`,
+        content: content.trim(),
+        sender: user,
+        receiver: { id: receiverId } as any,
+        isRead: false,
+        createdAt: new Date().toISOString(),
+      };
+      setActiveMessages((prev) => [...prev, tempMsg]);
     }
   };
 
@@ -151,6 +167,18 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const clearAllMessages = async () => {
+    try {
+      await apiClient.post('/chat/clear-all');
+      setActiveMessages([]);
+      setConversations([]);
+    } catch (err) {
+      console.log('Error clearing messages:', err);
+      setActiveMessages([]);
+      setConversations([]);
+    }
+  };
+
   return (
     <ChatContext.Provider
       value={{
@@ -162,6 +190,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
         loadMessages,
         sendMessage,
         markAsRead,
+        clearAllMessages,
       }}
     >
       {children}

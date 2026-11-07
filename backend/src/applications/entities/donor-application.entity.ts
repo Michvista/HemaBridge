@@ -41,6 +41,24 @@ export class DonorApplication {
   @Column({ nullable: true })
   screeningTime: string; // e.g. '09:30'
 
+  @Column({ type: 'text', nullable: true })
+  clinicalNotes: string;
+
+  @Column({ nullable: true })
+  labResults: string; // 'passed' | 'failed' | 'pending'
+
+  @Column({ type: 'int', default: 5 })
+  hospitalRating: number; // 1 to 5 stars
+
+  @Column({ type: 'text', nullable: true })
+  ratingFeedback: string;
+
+  @Column({ type: 'int', default: 1 })
+  unitsCollected: number;
+
+  @Column({ default: false })
+  awardedBadge: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 

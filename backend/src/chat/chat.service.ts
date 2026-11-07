@@ -119,4 +119,9 @@ export class ChatService {
 
     return { success: true };
   }
+
+  async clearAllMessages() {
+    await this.chatMessageRepository.delete({});
+    return { success: true, message: 'All chat messages cleared successfully' };
+  }
 }

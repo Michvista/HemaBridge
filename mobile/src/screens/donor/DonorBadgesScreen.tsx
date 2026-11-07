@@ -28,7 +28,6 @@ interface GameBadge {
   maxProgress: number;
   unit: string;
   accentColor: string;
-  bgGradient: string;
   iconType: 'heart' | 'medal' | 'shield' | 'alert' | 'crown';
 }
 
@@ -51,8 +50,7 @@ const BADGES_DATABASE: GameBadge[] = [
     currentProgress: 1,
     maxProgress: 1,
     unit: 'donation',
-    accentColor: '#e11d48',
-    bgGradient: '#ffe4e6',
+    accentColor: '#be123c',
     iconType: 'heart',
   },
   {
@@ -74,7 +72,6 @@ const BADGES_DATABASE: GameBadge[] = [
     maxProgress: 1,
     unit: 'award',
     accentColor: '#d97706',
-    bgGradient: '#fef3c7',
     iconType: 'medal',
   },
   {
@@ -92,8 +89,7 @@ const BADGES_DATABASE: GameBadge[] = [
     currentProgress: 0,
     maxProgress: 1,
     unit: 'red alert donation',
-    accentColor: '#dc2626',
-    bgGradient: '#fee2e2',
+    accentColor: '#990011',
     iconType: 'alert',
   },
   {
@@ -111,8 +107,7 @@ const BADGES_DATABASE: GameBadge[] = [
     currentProgress: 1,
     maxProgress: 3,
     unit: 'donations completed',
-    accentColor: '#64748b',
-    bgGradient: '#f1f5f9',
+    accentColor: '#475569',
     iconType: 'shield',
   },
   {
@@ -130,8 +125,7 @@ const BADGES_DATABASE: GameBadge[] = [
     currentProgress: 1,
     maxProgress: 5,
     unit: 'donations completed',
-    accentColor: '#f59e0b',
-    bgGradient: '#fef9c3',
+    accentColor: '#b45309',
     iconType: 'crown',
   },
   {
@@ -149,8 +143,7 @@ const BADGES_DATABASE: GameBadge[] = [
     currentProgress: 1,
     maxProgress: 10,
     unit: 'donations completed',
-    accentColor: '#7c3aed',
-    bgGradient: '#ede9fe',
+    accentColor: '#6d28d9',
     iconType: 'crown',
   },
 ];
@@ -174,85 +167,73 @@ export const DonorBadgesScreen: React.FC = () => {
     const color = badge.earned ? badge.accentColor : '#94a3b8';
     switch (badge.iconType) {
       case 'heart':
-        return <Heart color={color} width={size} height={size} strokeWidth={2.5} />;
+        return <Heart color={color} width={size} height={size} strokeWidth={2.4} />;
       case 'shield':
-        return <Shield color={color} width={size} height={size} strokeWidth={2.5} />;
+        return <Shield color={color} width={size} height={size} strokeWidth={2.4} />;
       case 'alert':
-        return <WarningTriangle color={color} width={size} height={size} strokeWidth={2.5} />;
+        return <WarningTriangle color={color} width={size} height={size} strokeWidth={2.4} />;
       default:
-        return <Medal color={color} width={size} height={size} strokeWidth={2.5} />;
-    }
-  };
-
-  const getRarityBadgeStyle = (rarity: GameBadge['rarity']) => {
-    switch (rarity) {
-      case 'Legendary':
-        return { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-300' };
-      case 'Epic':
-        return { bg: 'bg-rose-100', text: 'text-rose-700', border: 'border-rose-300' };
-      case 'Rare':
-        return { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-300' };
-      default:
-        return { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-300' };
+        return <Medal color={color} width={size} height={size} strokeWidth={2.4} />;
     }
   };
 
   return (
-    <ScrollView className="flex-1 bg-slate-50" contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+    <ScrollView
+      className="flex-1 bg-slate-50"
+      contentContainerStyle={{ padding: 16, paddingBottom: 60 }}
+      showsVerticalScrollIndicator={false}
+    >
       {/* Header */}
       <View className="mb-4">
-        <Text className="text-2xl font-black text-slate-900 tracking-tight">
-          Trophy & Honours Hall
+        <Text className="text-xl font-black text-slate-900 tracking-tight">
+          Vein of Hope Honours Hall
         </Text>
-        <Text className="text-xs text-slate-500 mt-1">
-          Track unlocked badges, game-style milestones, and humanitarian impact
+        <Text className="text-xs text-slate-500 mt-0.5">
+          Game-style donor progression, clinical verification & lifesaver ranks
         </Text>
       </View>
 
-      {/* Game Level & Rank Banner */}
-      <View className="bg-gradient-to-r bg-slate-900 rounded-3xl p-5 mb-5 shadow-lg border border-slate-800">
+      {/* Rank Progress Banner */}
+      <View className="bg-white rounded-3xl p-5 mb-4 border border-slate-200 shadow-sm">
         <View className="flex-row items-center justify-between mb-3">
           <View>
             <View className="flex-row items-center">
-              <Text className="text-amber-400 font-black text-sm tracking-widest uppercase mr-2">
+              <Text className="text-[#990011] font-black text-xs uppercase tracking-wider mr-2">
                 LEVEL 2 LIFESAVER
               </Text>
-              <View className="bg-amber-400/20 border border-amber-400/40 px-2 py-0.5 rounded-full">
-                <Text className="text-amber-300 text-[10px] font-black">
-                  RANK: BRONZE VANGUARD
+              <View className="bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full">
+                <Text className="text-rose-900 text-[10px] font-black">
+                  BRONZE VANGUARD
                 </Text>
               </View>
             </View>
-            <Text className="text-white text-lg font-black mt-1">
+            <Text className="text-slate-900 text-lg font-black mt-1">
               {unlockedCount} of {totalCount} Badges Unlocked
             </Text>
           </View>
-          <View className="w-14 h-14 rounded-2xl bg-amber-400/10 border border-amber-400/30 items-center justify-center">
-            <Medal color="#fbbf24" width={32} height={32} strokeWidth={2.5} />
+
+          <View className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 items-center justify-center">
+            <Medal color="#d97706" width={26} height={26} strokeWidth={2.4} />
           </View>
         </View>
 
-        {/* Level XP Progress Bar */}
-        <View className="mb-2">
+        {/* Progress Bar */}
+        <View className="mb-1">
           <View className="flex-row justify-between mb-1">
-            <Text className="text-[11px] text-slate-300 font-semibold">
-              Progression to Level 3 (Silver Sentinel)
+            <Text className="text-[11px] text-slate-500 font-semibold">
+              Progression to Silver Sentinel
             </Text>
-            <Text className="text-[11px] text-amber-400 font-bold">
-              {completionPercent}% Complete
+            <Text className="text-[11px] text-slate-800 font-bold">
+              {completionPercent}%
             </Text>
           </View>
-          <View className="h-2.5 bg-slate-800 rounded-full overflow-hidden">
+          <View className="h-2 bg-slate-100 rounded-full overflow-hidden">
             <View
-              className="h-full bg-gradient-to-r bg-amber-400 rounded-full"
+              className="h-full bg-[#990011] rounded-full"
               style={{ width: `${completionPercent}%` }}
             />
           </View>
         </View>
-
-        <Text className="text-[11px] text-slate-400 leading-4 mt-1">
-          Next unlock: Complete 2 more donations to earn the Silver Sentinel shield.
-        </Text>
       </View>
 
       {/* Filter Tabs */}
@@ -289,7 +270,6 @@ export const DonorBadgesScreen: React.FC = () => {
       {/* Badges List */}
       <View className="space-y-3">
         {filteredBadges.map((badge) => {
-          const rarityStyle = getRarityBadgeStyle(badge.rarity);
           const percent = Math.min(
             100,
             Math.round((badge.currentProgress / badge.maxProgress) * 100)
@@ -303,38 +283,30 @@ export const DonorBadgesScreen: React.FC = () => {
               className={`rounded-2xl p-4 border shadow-sm ${
                 badge.earned
                   ? 'bg-white border-slate-200'
-                  : 'bg-slate-50/90 border-slate-200/80 opacity-90'
+                  : 'bg-white/80 border-slate-200/60'
               }`}
             >
               <View className="flex-row items-start">
-                {/* Badge Icon Emblem */}
+                {/* Emblem */}
                 <View
                   style={{
-                    backgroundColor: badge.earned ? badge.bgGradient : '#f1f5f9',
-                    borderColor: badge.earned ? badge.accentColor : '#cbd5e1',
+                    backgroundColor: badge.earned ? '#fff1f2' : '#f8fafc',
+                    borderColor: badge.earned ? badge.accentColor : '#e2e8f0',
                   }}
-                  className="w-14 h-14 rounded-2xl border items-center justify-center mr-3.5"
+                  className="w-13 h-13 rounded-2xl border items-center justify-center mr-3.5 p-2.5"
                 >
-                  {renderBadgeIcon(badge, 28)}
+                  {renderBadgeIcon(badge, 26)}
                 </View>
 
-                {/* Badge Info */}
+                {/* Info */}
                 <View className="flex-1">
                   <View className="flex-row items-center justify-between mb-0.5">
                     <View className="flex-row items-center flex-wrap gap-1">
-                      <Text
-                        className={`text-base font-extrabold ${
-                          badge.earned ? 'text-slate-900' : 'text-slate-700'
-                        }`}
-                      >
+                      <Text className="text-sm font-black text-slate-900">
                         {badge.name}
                       </Text>
-                      <View
-                        className={`px-1.5 py-0.5 rounded border ${rarityStyle.bg} ${rarityStyle.border}`}
-                      >
-                        <Text
-                          className={`text-[9px] font-black uppercase ${rarityStyle.text}`}
-                        >
+                      <View className="bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded">
+                        <Text className="text-[9px] font-black uppercase text-slate-700">
                           {badge.rarity}
                         </Text>
                       </View>
@@ -342,17 +314,15 @@ export const DonorBadgesScreen: React.FC = () => {
 
                     {badge.earned ? (
                       <View className="flex-row items-center bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                        <Check color="#059669" width={11} height={11} strokeWidth={3} />
-                        <Text className="text-[10px] font-extrabold text-emerald-700 ml-1">
+                        <Check color="#059669" width={10} height={10} strokeWidth={3} />
+                        <Text className="text-[9px] font-black text-emerald-800 ml-1">
                           EARNED
                         </Text>
                       </View>
                     ) : (
-                      <View className="flex-row items-center bg-slate-200/70 px-2 py-0.5 rounded-full">
-                        <Text className="text-[10px] font-bold text-slate-600">
-                          {percent}%
-                        </Text>
-                      </View>
+                      <Text className="text-[10px] font-bold text-slate-500">
+                        {percent}%
+                      </Text>
                     )}
                   </View>
 
@@ -360,8 +330,8 @@ export const DonorBadgesScreen: React.FC = () => {
                     {badge.tagline}
                   </Text>
 
-                  {/* Progress Bar & Est Time */}
-                  <View className="mt-1">
+                  {/* Progress & Time */}
+                  <View>
                     <View className="flex-row justify-between items-center mb-1">
                       <Text className="text-[10px] font-bold text-slate-600">
                         {badge.currentProgress} / {badge.maxProgress} {badge.unit}
@@ -373,7 +343,7 @@ export const DonorBadgesScreen: React.FC = () => {
                         </Text>
                       </View>
                     </View>
-                    <View className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                    <View className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                       <View
                         style={{
                           width: `${percent}%`,
@@ -387,30 +357,17 @@ export const DonorBadgesScreen: React.FC = () => {
               </View>
 
               <View className="flex-row items-center justify-between mt-3 pt-2.5 border-t border-slate-100">
-                <Text className="text-[11px] font-semibold text-rose-700">
-                  Tap to view badge lore & requirements
+                <Text className="text-[11px] font-semibold text-[#990011]">
+                  View badge lore & requirements
                 </Text>
-                <NavArrowRight color="#be123c" width={14} height={14} />
+                <NavArrowRight color="#990011" width={13} height={13} />
               </View>
             </TouchableOpacity>
           );
         })}
       </View>
 
-      {/* Educational Lifesaver Tips Card */}
-      <View className="mt-6 bg-rose-50 border border-rose-200 rounded-2xl p-4">
-        <Text className="text-sm font-black text-rose-900 mb-1">
-          Why "Vein of Hope" Recognition Matters
-        </Text>
-        <Text className="text-xs text-rose-800 leading-5">
-          In Nigeria, less than 10% of blood needs are met by voluntary donors. Each badge
-          earned verifies that you showed up for a patient in emergency crisis, maternity
-          complications, or sickle-cell care. Certificates issued are accredited by hospital
-          clinical desks.
-        </Text>
-      </View>
-
-      {/* Game Trophy Inspection Modal */}
+      {/* Trophy Inspection Drawer Modal */}
       <Modal
         visible={!!selectedBadge}
         transparent
@@ -418,66 +375,37 @@ export const DonorBadgesScreen: React.FC = () => {
         onRequestClose={() => setSelectedBadge(null)}
       >
         <View className="flex-1 bg-black/60 justify-end">
-          <View className="bg-white rounded-t-3xl p-6 max-h-[85%]">
+          <View className="bg-white rounded-t-3xl p-5 max-h-[82%]">
             {selectedBadge && (
               <ScrollView showsVerticalScrollIndicator={false}>
-                {/* Close Bar */}
-                <View className="items-center mb-4">
-                  <View className="w-12 h-1 bg-slate-300 rounded-full" />
-                </View>
+                {/* Drag Drawer Handle */}
+                <TouchableOpacity
+                  onPress={() => setSelectedBadge(null)}
+                  className="items-center py-1 mb-2"
+                >
+                  <View className="w-12 h-1.5 bg-slate-300 rounded-full" />
+                </TouchableOpacity>
 
-                {/* Badge Emblem Centerpiece */}
-                <View className="items-center mb-4">
+                <View className="items-center mb-3">
                   <View
                     style={{
-                      backgroundColor: selectedBadge.earned
-                        ? selectedBadge.bgGradient
-                        : '#f1f5f9',
-                      borderColor: selectedBadge.earned
-                        ? selectedBadge.accentColor
-                        : '#cbd5e1',
+                      backgroundColor: selectedBadge.earned ? '#fff1f2' : '#f8fafc',
+                      borderColor: selectedBadge.earned ? selectedBadge.accentColor : '#cbd5e1',
                     }}
-                    className="w-20 h-20 rounded-3xl border-2 items-center justify-center shadow-md mb-2"
+                    className="w-18 h-18 rounded-3xl border-2 items-center justify-center p-3 mb-2"
                   >
-                    {renderBadgeIcon(selectedBadge, 42)}
+                    {renderBadgeIcon(selectedBadge, 36)}
                   </View>
-                  <Text className="text-xl font-black text-slate-900 text-center">
+
+                  <Text className="text-lg font-black text-slate-900">
                     {selectedBadge.name}
                   </Text>
-                  <Text className="text-xs text-slate-500 font-semibold text-center mt-0.5">
+                  <Text className="text-xs text-slate-500 font-semibold mt-0.5">
                     {selectedBadge.tagline}
                   </Text>
-                  <View className="flex-row items-center gap-1.5 mt-2">
-                    <View
-                      className={`px-2 py-0.5 rounded border ${
-                        getRarityBadgeStyle(selectedBadge.rarity).bg
-                      } ${getRarityBadgeStyle(selectedBadge.rarity).border}`}
-                    >
-                      <Text
-                        className={`text-[10px] font-black uppercase ${
-                          getRarityBadgeStyle(selectedBadge.rarity).text
-                        }`}
-                      >
-                        {selectedBadge.rarity} TIER {selectedBadge.level}
-                      </Text>
-                    </View>
-                    {selectedBadge.earned ? (
-                      <View className="bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded">
-                        <Text className="text-[10px] font-black text-emerald-800">
-                          STATUS: UNLOCKED
-                        </Text>
-                      </View>
-                    ) : (
-                      <View className="bg-slate-200 border border-slate-300 px-2 py-0.5 rounded">
-                        <Text className="text-[10px] font-black text-slate-700">
-                          STATUS: LOCKED
-                        </Text>
-                      </View>
-                    )}
-                  </View>
                 </View>
 
-                {/* What it Represents */}
+                {/* What it represents */}
                 <View className="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-3">
                   <Text className="text-xs font-black text-slate-800 uppercase tracking-wider mb-1">
                     What This Badge Represents
@@ -487,7 +415,7 @@ export const DonorBadgesScreen: React.FC = () => {
                   </Text>
                 </View>
 
-                {/* How to Get it */}
+                {/* How to unlock */}
                 <View className="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-3">
                   <Text className="text-xs font-black text-slate-800 uppercase tracking-wider mb-1">
                     How to Unlock It
@@ -496,15 +424,15 @@ export const DonorBadgesScreen: React.FC = () => {
                     {selectedBadge.howToGet}
                   </Text>
                   <View className="flex-row items-center mt-2.5 pt-2 border-t border-slate-200">
-                    <Clock color="#d97706" width={14} height={14} />
+                    <Clock color="#b45309" width={13} height={13} />
                     <Text className="text-[11px] font-semibold text-amber-900 ml-1.5">
                       Estimated Timeline: {selectedBadge.estimatedTime}
                     </Text>
                   </View>
                 </View>
 
-                {/* Progress / Verification Details */}
-                {selectedBadge.earned ? (
+                {/* Accreditation Details if earned */}
+                {selectedBadge.earned && (
                   <View className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 mb-4">
                     <Text className="text-xs font-black text-emerald-900 uppercase tracking-wider mb-1">
                       Clinical Accreditation Proof
@@ -513,42 +441,17 @@ export const DonorBadgesScreen: React.FC = () => {
                       Awarded By: <Text className="font-bold">{selectedBadge.awardedBy}</Text>
                     </Text>
                     <Text className="text-xs text-emerald-800 mt-0.5">
-                      Date Issued: <Text className="font-bold">{selectedBadge.earnedDate}</Text>
-                    </Text>
-                    <Text className="text-xs text-emerald-800 mt-0.5">
                       Certificate ID: <Text className="font-bold font-mono">{selectedBadge.certificateId}</Text>
                     </Text>
                   </View>
-                ) : (
-                  <View className="bg-slate-100 border border-slate-200 rounded-2xl p-4 mb-4">
-                    <View className="flex-row justify-between mb-1.5">
-                      <Text className="text-xs font-black text-slate-800">
-                        Current Progress
-                      </Text>
-                      <Text className="text-xs font-bold text-slate-600">
-                        {selectedBadge.currentProgress} / {selectedBadge.maxProgress} {selectedBadge.unit}
-                      </Text>
-                    </View>
-                    <View className="h-2 bg-slate-300 rounded-full overflow-hidden">
-                      <View
-                        style={{
-                          width: `${Math.round(
-                            (selectedBadge.currentProgress / selectedBadge.maxProgress) * 100
-                          )}%`,
-                        }}
-                        className="h-full bg-slate-800 rounded-full"
-                      />
-                    </View>
-                  </View>
                 )}
 
-                {/* Close Button */}
                 <TouchableOpacity
                   onPress={() => setSelectedBadge(null)}
-                  className="bg-slate-900 py-3.5 rounded-2xl items-center justify-center mt-2"
+                  className="bg-slate-900 py-3.5 rounded-2xl items-center shadow mt-1"
                 >
-                  <Text className="text-white font-extrabold text-sm">
-                    Close Hall Inspector
+                  <Text className="text-white font-black text-xs">
+                    Close Inspector
                   </Text>
                 </TouchableOpacity>
               </ScrollView>
