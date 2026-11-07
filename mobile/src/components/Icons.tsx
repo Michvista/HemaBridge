@@ -18,7 +18,7 @@ import {
   Plus,
   Send,
   Refresh,
-} from 'iconnoir-react-native';
+} from 'iconoir-react-native';
 
 export {
   Heart,
