@@ -26,6 +26,12 @@
     },
     "plugins": [
       "expo-status-bar"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "0711798b-ed70-458e-be3e-492d900dd4e9"
+      }
+    },
+    "owner": "michelle29"
   }
 }
