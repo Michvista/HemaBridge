@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  Image,
 } from 'react-native';
 import { Heart, Hospital, User as UserIcon, Shield, NavArrowRight } from '../../components/Icons';
 import { useAuth } from '../../context/AuthContext';
@@ -19,35 +20,30 @@ export const IntroWelcomeScreen: React.FC<IntroProps> = ({ onNavigateToAuth }) =
   const { switchPersona } = useAuth();
 
   return (
-    <View className="flex-1 bg-[#990011]">
+    <View className="flex-1 bg-[#b91c1c]">
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        {/* Top Half: Crimson Background with Centered Arched Visual */}
-        <View className="items-center justify-center pt-8 pb-6 px-6">
-          {/* Arched Illustration Window matching reference design */}
+        {/* Top Half: Crimson Background with Centered Arched Visual Window */}
+        <View className="items-center justify-center pt-8 pb-5 px-6">
           <View
-            style={{ width: Math.min(width * 0.65, 260), height: Math.min(height * 0.38, 280) }}
-            className="rounded-t-full rounded-b-[40px] bg-rose-950/40 border-2 border-white/20 items-center justify-center overflow-hidden shadow-2xl relative"
+            style={{
+              width: Math.min(width * 0.72, 280),
+              height: Math.min(height * 0.36, 280),
+              borderTopLeftRadius: 140,
+              borderTopRightRadius: 140,
+              borderBottomLeftRadius: 36,
+              borderBottomRightRadius: 36,
+            }}
+            className="overflow-hidden border-2 border-white/30 shadow-2xl bg-rose-900 relative"
           >
-            {/* Soft ambient radial glow */}
-            <View className="w-48 h-48 rounded-full bg-white/10 absolute top-4 items-center justify-center" />
-
-            {/* Central Blood Donation Graphic */}
-            <View className="w-24 h-24 rounded-full bg-white/15 border border-white/30 items-center justify-center shadow-lg">
-              <Heart color="#ffffff" width={48} height={48} strokeWidth={2.2} />
-            </View>
-
-            <View className="mt-4 px-4 items-center">
-              <Text className="text-white/90 text-xs font-bold text-center tracking-wide">
-                HemaBridge Nigeria
-              </Text>
-              <Text className="text-rose-200/80 text-[10px] text-center mt-0.5">
-                Every donor is a hope for someone's next breath
-              </Text>
-            </View>
+            <Image
+              source={require('../../../assets/welcome_hero.jpg')}
+              style={{ width: '100%', height: '100%' }}
+              resizeMode="cover"
+            />
           </View>
         </View>
 
@@ -71,7 +67,7 @@ export const IntroWelcomeScreen: React.FC<IntroProps> = ({ onNavigateToAuth }) =
             <TouchableOpacity
               activeOpacity={0.88}
               onPress={onNavigateToAuth}
-              className="w-full bg-[#990011] py-4 rounded-full items-center justify-center shadow-md active:opacity-90"
+              className="w-full bg-[#b91c1c] py-4 rounded-full items-center justify-center shadow-md active:opacity-90"
             >
               <Text className="text-white font-black text-sm tracking-wide">
                 Donate Now

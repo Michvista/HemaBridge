@@ -22,7 +22,7 @@ const MainNavigator: React.FC = () => {
       );
     }
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
+      <SafeAreaView className="flex-1 bg-[#b91c1c]" edges={['top', 'left', 'right']}>
         <IntroWelcomeScreen onNavigateToAuth={() => setAuthView('auth')} />
       </SafeAreaView>
     );
