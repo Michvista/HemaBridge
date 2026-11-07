@@ -86,7 +86,11 @@ export const AdvocateHomeScreen: React.FC<{ navigation: any }> = ({
   };
 
   return (
-    <ScrollView className="flex-1 bg-slate-50 p-4">
+    <ScrollView
+      className="flex-1 bg-slate-50 p-4"
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: 70 }}
+      showsVerticalScrollIndicator={false}
+    >
       {/* Advocate Emergency Banner */}
       <View className="bg-amber-900 rounded-3xl p-5 mb-4 shadow-md">
         <View className="flex-row items-center justify-between mb-2">

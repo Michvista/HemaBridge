@@ -87,7 +87,11 @@ export const DonorHomeScreen: React.FC = () => {
   };
 
   return (
-    <ScrollView className="flex-1 bg-slate-50">
+    <ScrollView
+      className="flex-1 bg-slate-50"
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: 70 }}
+      showsVerticalScrollIndicator={false}
+    >
       <View className="p-4">
         {/* Availability Hero Banner */}
         <View className="bg-rose-900 rounded-3xl p-5 mb-4 shadow-md">

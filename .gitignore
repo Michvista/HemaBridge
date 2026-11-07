@@ -24,6 +24,9 @@ Thumbs.db
 .antigravity/
 builtin/
 skills/
+.skills/
+skills-lock.json
+.agent/
 scratch/
 *.ps1
 

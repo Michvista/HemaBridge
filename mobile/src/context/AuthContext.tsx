@@ -8,10 +8,13 @@ interface AuthContextType {
   role: UserRole;
   token: string | null;
   isLoading: boolean;
-  login: (email: string, pass: string) => Promise<void>;
+  showIntro: boolean;
+  setShowIntro: (show: boolean) => void;
+  login: (token: string, user: User) => void;
   register: (payload: any) => Promise<void>;
   logout: () => void;
   quickSwitchRole: (role: UserRole) => Promise<void>;
+  switchPersona: (persona: 'donor' | 'advocate' | 'hospital') => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
@@ -24,25 +27,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [role, setRole] = useState<UserRole>(UserRole.DONOR);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [showIntro, setShowIntro] = useState<boolean>(false);
 
   // Initialize with the primary dummy donor account on boot
   useEffect(() => {
     quickSwitchRole(UserRole.DONOR).finally(() => setIsLoading(false));
   }, []);
 
-  const login = async (email: string, pass: string) => {
-    setIsLoading(true);
-    try {
-      const res = await apiClient.post('/auth/login', { email, password: pass });
-      const { accessToken, user: loggedUser } = res.data;
-      setToken(accessToken);
-      setUser(loggedUser);
-      setRole(loggedUser.role);
-      setAuthToken(accessToken);
-      getSocket(loggedUser.id);
-    } finally {
-      setIsLoading(false);
-    }
+  const login = (authToken: string, loggedUser: User) => {
+    setToken(authToken);
+    setUser(loggedUser);
+    setRole(loggedUser.role);
+    setAuthToken(authToken);
+    setShowIntro(false);
+    getSocket(loggedUser.id);
   };
 
   const register = async (payload: any) => {
@@ -50,11 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const res = await apiClient.post('/auth/register', payload);
       const { accessToken, user: registeredUser } = res.data;
-      setToken(accessToken);
-      setUser(registeredUser);
-      setRole(registeredUser.role);
-      setAuthToken(accessToken);
-      getSocket(registeredUser.id);
+      login(accessToken, registeredUser);
     } finally {
       setIsLoading(false);
     }
@@ -69,12 +63,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser(quickUser);
       setRole(quickUser.role);
       setAuthToken(accessToken);
+      setShowIntro(false);
       getSocket(quickUser.id);
     } catch (err) {
       console.log(`Failed to quick-switch to ${targetRole}:`, err);
+      // Fallback local mock user so offline testing works seamlessly
+      const fallbackUser: User = {
+        id: targetRole === UserRole.DONOR ? 'mock-donor' : targetRole === UserRole.ADVOCATE ? 'mock-advocate' : 'mock-hospital',
+        name: targetRole === UserRole.DONOR ? 'Amara Miller' : targetRole === UserRole.ADVOCATE ? 'Bolanle Adebayo' : 'LUTH Lagos',
+        email: `${targetRole}@hemabridge.com`,
+        phone: '+234 803 123 4567',
+        role: targetRole,
+      };
+      setUser(fallbackUser);
+      setRole(targetRole);
+      setShowIntro(false);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const switchPersona = async (persona: 'donor' | 'advocate' | 'hospital') => {
+    const map: Record<string, UserRole> = {
+      donor: UserRole.DONOR,
+      advocate: UserRole.ADVOCATE,
+      hospital: UserRole.HOSPITAL,
+    };
+    await quickSwitchRole(map[persona]);
   };
 
   const refreshProfile = async () => {
@@ -92,6 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setUser(null);
     setToken(null);
     setAuthToken(null);
+    setShowIntro(true);
     disconnectSocket();
   };
 
@@ -102,10 +118,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         role,
         token,
         isLoading,
+        showIntro,
+        setShowIntro,
         login,
         register,
         logout,
         quickSwitchRole,
+        switchPersona,
         refreshProfile,
       }}
     >
