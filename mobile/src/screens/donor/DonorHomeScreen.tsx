@@ -22,6 +22,12 @@ import {
   Check,
   WarningTriangle,
 } from '../../components/Icons';
+import {
+  BouncyPressable,
+  ShimmerCard,
+  PulseBeacon,
+  ButtonLoadingContent,
+} from '../../components/MicroInteractions';
 
 export const DonorHomeScreen: React.FC = () => {
   const { user, refreshProfile } = useAuth();
@@ -29,6 +35,7 @@ export const DonorHomeScreen: React.FC = () => {
     user?.donorProfile?.isAvailable ?? true,
   );
   const [hospitals, setHospitals] = useState<HospitalProfile[]>([]);
+  const [isLoadingHospitals, setIsLoadingHospitals] = useState<boolean>(true);
   const [selectedHospital, setSelectedHospital] = useState<HospitalProfile | null>(
     null,
   );
@@ -40,11 +47,14 @@ export const DonorHomeScreen: React.FC = () => {
   }, []);
 
   const loadHospitals = async () => {
+    setIsLoadingHospitals(true);
     try {
       const res = await apiClient.get('/hospitals');
       setHospitals(res.data);
     } catch (err) {
       console.log('Error loading hospitals:', err);
+    } finally {
+      setIsLoadingHospitals(false);
     }
   };
 
@@ -177,71 +187,78 @@ export const DonorHomeScreen: React.FC = () => {
             Real-time blood bank status and urgent group shortages in Lagos
           </Text>
 
-          {hospitals.map((hosp) => (
-            <View
-              key={hosp.id}
-              className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm mb-3"
-            >
-              <View className="flex-row items-start justify-between mb-2">
-                <View className="flex-1 mr-2">
-                  <Text className="font-extrabold text-slate-900 text-sm">
-                    {hosp.name}
-                  </Text>
-                  <View className="flex-row items-center mt-1">
-                    <Pin color="#64748b" height={13} width={13} />
-                    <Text className="text-xs text-slate-500 ml-1">
-                      {hosp.address}
+          {isLoadingHospitals ? (
+            <>
+              <ShimmerCard height={120} />
+              <ShimmerCard height={120} />
+            </>
+          ) : (
+            hospitals.map((hosp) => (
+              <View
+                key={hosp.id}
+                className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm mb-3"
+              >
+                <View className="flex-row items-start justify-between mb-2">
+                  <View className="flex-1 mr-2">
+                    <Text className="font-extrabold text-slate-900 text-sm">
+                      {hosp.name}
                     </Text>
-                  </View>
-                </View>
-                <StatusBadge status={hosp.isDeskOpen ? 'Open' : 'Closed'} />
-              </View>
-
-              <View className="flex-row items-center justify-between pt-2 border-t border-slate-100 mt-2">
-                <View className="flex-row items-center space-x-2">
-                  <Text className="text-xs text-slate-500">
-                    Distance: <Text className="font-bold text-slate-700">{hosp.distance}</Text>
-                  </Text>
-                  <Text className="text-xs text-slate-400">•</Text>
-                  <Text className="text-xs text-slate-500">
-                    ETA: <Text className="font-bold text-slate-700">{hosp.eta}</Text>
-                  </Text>
-                </View>
-
-                <TouchableOpacity
-                  onPress={() => {
-                    setSelectedHospital(hosp);
-                    setApplyModalVisible(true);
-                  }}
-                  className="bg-rose-700 px-3.5 py-1.5 rounded-xl shadow-sm"
-                >
-                  <Text className="text-white text-xs font-bold">Apply</Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Needed Blood Types */}
-              <View className="flex-row items-center mt-2.5 bg-rose-50/60 p-2 rounded-xl">
-                <Text className="text-[11px] font-bold text-rose-800 mr-2">
-                  Needed Groups:
-                </Text>
-                <View className="flex-row flex-wrap">
-                  {(Array.isArray(hosp.neededBloodTypes)
-                    ? hosp.neededBloodTypes
-                    : [hosp.neededBloodTypes]
-                  ).map((type, idx) => (
-                    <View
-                      key={idx}
-                      className="bg-white px-2 py-0.5 rounded-md mr-1 border border-rose-200"
-                    >
-                      <Text className="text-[11px] font-bold text-rose-900">
-                        {type}
+                    <View className="flex-row items-center mt-1">
+                      <Pin color="#64748b" height={13} width={13} />
+                      <Text className="text-xs text-slate-500 ml-1">
+                        {hosp.address}
                       </Text>
                     </View>
-                  ))}
+                  </View>
+                  <StatusBadge status={hosp.isDeskOpen ? 'Open' : 'Closed'} />
+                </View>
+
+                <View className="flex-row items-center justify-between pt-2 border-t border-slate-100 mt-2">
+                  <View className="flex-row items-center space-x-2">
+                    <Text className="text-xs text-slate-500">
+                      Distance: <Text className="font-bold text-slate-700">{hosp.distance}</Text>
+                    </Text>
+                    <Text className="text-xs text-slate-400">•</Text>
+                    <Text className="text-xs text-slate-500">
+                      ETA: <Text className="font-bold text-slate-700">{hosp.eta}</Text>
+                    </Text>
+                  </View>
+
+                  <BouncyPressable
+                    onPress={() => {
+                      setSelectedHospital(hosp);
+                      setApplyModalVisible(true);
+                    }}
+                    className="bg-rose-700 px-3.5 py-1.5 rounded-xl shadow-sm"
+                  >
+                    <Text className="text-white text-xs font-bold">Apply</Text>
+                  </BouncyPressable>
+                </View>
+
+                {/* Needed Blood Types */}
+                <View className="flex-row items-center mt-2.5 bg-rose-50/60 p-2 rounded-xl">
+                  <Text className="text-[11px] font-bold text-rose-800 mr-2">
+                    Needed Groups:
+                  </Text>
+                  <View className="flex-row flex-wrap">
+                    {(Array.isArray(hosp.neededBloodTypes)
+                      ? hosp.neededBloodTypes
+                      : [hosp.neededBloodTypes]
+                    ).map((type, idx) => (
+                      <View
+                        key={idx}
+                        className="bg-white px-2 py-0.5 rounded-md mr-1 border border-rose-200"
+                      >
+                        <Text className="text-[11px] font-bold text-rose-900">
+                          {type}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
                 </View>
               </View>
-            </View>
-          ))}
+            ))
+          )}
         </View>
       </View>
 
@@ -295,15 +312,17 @@ export const DonorHomeScreen: React.FC = () => {
                 <Text className="font-bold text-slate-700 text-sm">Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
+              <BouncyPressable
                 disabled={isApplying}
                 onPress={handleApply}
                 className="flex-1 py-3 rounded-xl bg-rose-700 items-center justify-center shadow-md ml-2"
               >
-                <Text className="font-bold text-white text-sm">
-                  {isApplying ? 'Submitting...' : 'Confirm Application'}
-                </Text>
-              </TouchableOpacity>
+                <ButtonLoadingContent
+                  loading={isApplying}
+                  loadingText="Submitting..."
+                  defaultText="Confirm Application"
+                />
+              </BouncyPressable>
             </View>
           </View>
         </View>

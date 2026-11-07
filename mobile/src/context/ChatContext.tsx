@@ -120,6 +120,18 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   ) => {
     if (!user?.id || !content.trim()) return;
 
+    // Instant optimistic message for zero UI lag
+    const tempId = `temp-${Date.now()}`;
+    const optimisticMessage: ChatMessage = {
+      id: tempId,
+      content: content.trim(),
+      sender: user,
+      receiver: { id: receiverId } as any,
+      isRead: false,
+      createdAt: new Date().toISOString(),
+    };
+    setActiveMessages((prev) => [...prev, optimisticMessage]);
+
     // Send via REST endpoint for guaranteed persistence and single emission
     try {
       const res = await apiClient.post('/chat/send', {
@@ -131,26 +143,15 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
 
       const savedMessage = res.data;
       if (savedMessage && savedMessage.id) {
-        setActiveMessages((prev) => {
-          if (prev.some((m) => m.id === savedMessage.id)) {
-            return prev;
-          }
-          return [...prev, savedMessage];
-        });
+        setActiveMessages((prev) =>
+          prev.map((m) => (m.id === tempId ? savedMessage : m)),
+        );
       }
       loadConversations();
     } catch (err) {
       console.log('Error sending message via REST:', err);
-      // Fallback local append for immediate responsive feel if offline
-      const tempMsg: ChatMessage = {
-        id: `local-${Date.now()}-${Math.random()}`,
-        content: content.trim(),
-        sender: user,
-        receiver: { id: receiverId } as any,
-        isRead: false,
-        createdAt: new Date().toISOString(),
-      };
-      setActiveMessages((prev) => [...prev, tempMsg]);
+      // Remove temp message if failed
+      setActiveMessages((prev) => prev.filter((m) => m.id !== tempId));
     }
   };
 

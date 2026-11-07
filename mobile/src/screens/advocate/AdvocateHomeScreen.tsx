@@ -22,6 +22,11 @@ import {
   Check,
   Medal,
 } from '../../components/Icons';
+import {
+  BouncyPressable,
+  ShimmerCard,
+  ButtonLoadingContent,
+} from '../../components/MicroInteractions';
 
 export const AdvocateHomeScreen: React.FC<{ navigation: any }> = ({
   navigation,
@@ -29,6 +34,7 @@ export const AdvocateHomeScreen: React.FC<{ navigation: any }> = ({
   const { user } = useAuth();
   const [selectedBloodType, setSelectedBloodType] = useState<string>('O+');
   const [donors, setDonors] = useState<any[]>([]);
+  const [isLoadingDonors, setIsLoadingDonors] = useState<boolean>(true);
   const [selectedDonor, setSelectedDonor] = useState<any | null>(null);
   const [requestModalVisible, setRequestModalVisible] = useState<boolean>(false);
   const [badgeGuideModalVisible, setBadgeGuideModalVisible] = useState<boolean>(false);
@@ -74,6 +80,7 @@ export const AdvocateHomeScreen: React.FC<{ navigation: any }> = ({
   }, [selectedBloodType]);
 
   const loadEligibleDonors = async () => {
+    setIsLoadingDonors(true);
     try {
       const res = await apiClient.get(
         `/donors/eligible?bloodType=${encodeURIComponent(selectedBloodType)}`,
@@ -81,6 +88,8 @@ export const AdvocateHomeScreen: React.FC<{ navigation: any }> = ({
       setDonors(res.data);
     } catch (err) {
       console.log('Error loading eligible donors:', err);
+    } finally {
+      setIsLoadingDonors(false);
     }
   };
 
@@ -213,7 +222,12 @@ export const AdvocateHomeScreen: React.FC<{ navigation: any }> = ({
 
       {/* Donors List */}
       <View className="space-y-3">
-        {donors.length === 0 ? (
+        {isLoadingDonors ? (
+          <>
+            <ShimmerCard height={130} />
+            <ShimmerCard height={130} />
+          </>
+        ) : donors.length === 0 ? (
           <View className="bg-white rounded-2xl p-6 border border-slate-200 items-center justify-center">
             <Heart color="#94a3b8" width={28} height={28} />
             <Text className="text-sm font-black text-slate-800 mt-2">
@@ -419,15 +433,17 @@ export const AdvocateHomeScreen: React.FC<{ navigation: any }> = ({
               </View>
             </View>
 
-            <TouchableOpacity
+            <BouncyPressable
               onPress={handleSendRequest}
               disabled={isSubmitting}
               className="bg-[#990011] py-3.5 rounded-full items-center shadow-md mb-2"
             >
-              <Text className="text-white font-black text-xs">
-                {isSubmitting ? 'Dispatching...' : 'Confirm & Dispatch Request'}
-              </Text>
-            </TouchableOpacity>
+              <ButtonLoadingContent
+                loading={isSubmitting}
+                loadingText="Dispatching Emergency Request..."
+                defaultText="Confirm & Dispatch Request"
+              />
+            </BouncyPressable>
 
             <TouchableOpacity
               onPress={() => setRequestModalVisible(false)}

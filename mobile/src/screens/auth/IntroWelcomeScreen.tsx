@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,9 +6,11 @@ import {
   TouchableOpacity,
   Dimensions,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { Heart, Hospital, User as UserIcon, Shield, NavArrowRight } from '../../components/Icons';
 import { useAuth } from '../../context/AuthContext';
+import { BouncyPressable, PulseBeacon } from '../../components/MicroInteractions';
 
 interface IntroProps {
   onNavigateToAuth: () => void;
@@ -17,7 +19,18 @@ interface IntroProps {
 const { width, height } = Dimensions.get('window');
 
 export const IntroWelcomeScreen: React.FC<IntroProps> = ({ onNavigateToAuth }) => {
-  const { switchPersona } = useAuth();
+  const { switchPersona, isLoading } = useAuth();
+  const [loadingPersona, setLoadingPersona] = useState<'donor' | 'advocate' | 'hospital' | null>(null);
+
+  const handleSwitchPersona = async (persona: 'donor' | 'advocate' | 'hospital') => {
+    if (loadingPersona) return;
+    setLoadingPersona(persona);
+    try {
+      await switchPersona(persona);
+    } finally {
+      setLoadingPersona(null);
+    }
+  };
 
   return (
     <View className="flex-1 bg-[#b91c1c]">
@@ -64,81 +77,123 @@ export const IntroWelcomeScreen: React.FC<IntroProps> = ({ onNavigateToAuth }) =
           {/* Action CTAs */}
           <View className="mt-6 space-y-2.5">
             {/* Donate Now Button matching reference photo */}
-            <TouchableOpacity
-              activeOpacity={0.88}
+            <BouncyPressable
               onPress={onNavigateToAuth}
+              disabled={!!loadingPersona}
               className="w-full bg-[#b91c1c] py-4 rounded-full items-center justify-center shadow-md active:opacity-90"
             >
               <Text className="text-white font-black text-sm tracking-wide">
                 Donate Now
               </Text>
-            </TouchableOpacity>
+            </BouncyPressable>
 
             {/* Sign In & Log In Options */}
             <View className="flex-row gap-2 mt-2">
-              <TouchableOpacity
-                activeOpacity={0.8}
+              <BouncyPressable
                 onPress={onNavigateToAuth}
+                disabled={!!loadingPersona}
                 className="flex-1 bg-slate-100 border border-slate-300 py-3 rounded-full items-center justify-center"
               >
                 <Text className="text-slate-800 font-extrabold text-xs">
                   Sign In
                 </Text>
-              </TouchableOpacity>
+              </BouncyPressable>
 
-              <TouchableOpacity
-                activeOpacity={0.8}
+              <BouncyPressable
                 onPress={onNavigateToAuth}
+                disabled={!!loadingPersona}
                 className="flex-1 bg-rose-50 border border-rose-200 py-3 rounded-full items-center justify-center"
               >
                 <Text className="text-[#990011] font-extrabold text-xs">
                   Create Account
                 </Text>
-              </TouchableOpacity>
+              </BouncyPressable>
             </View>
 
             {/* Demo Personas for Quick Exploration */}
             <View className="pt-3">
-              <Text className="text-[10px] font-black text-slate-400 text-center uppercase tracking-wider mb-2">
-                Or Try Instant Demo Access
-              </Text>
+              <View className="flex-row items-center justify-center mb-2.5 space-x-1.5">
+                <PulseBeacon color="#059669" size={6} />
+                <Text className="text-[10px] font-black text-slate-500 uppercase tracking-wider ml-1">
+                  Live Cloud Persona Demo
+                </Text>
+              </View>
 
               <View className="flex-row gap-2">
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  onPress={() => switchPersona('donor')}
-                  className="flex-1 bg-slate-50 border border-slate-200 py-2.5 px-1 rounded-2xl items-center shadow-xs"
+                <BouncyPressable
+                  onPress={() => handleSwitchPersona('donor')}
+                  disabled={!!loadingPersona}
+                  className={`flex-1 bg-slate-50 border py-2.5 px-1 rounded-2xl items-center shadow-xs ${
+                    loadingPersona === 'donor'
+                      ? 'border-[#990011] bg-rose-50/50'
+                      : 'border-slate-200'
+                  }`}
                 >
-                  <Heart color="#990011" width={16} height={16} strokeWidth={2.4} />
-                  <Text className="text-xs font-black text-slate-800 mt-1">
-                    Donor
-                  </Text>
-                  <Text className="text-[10px] text-slate-400">Amara (O+)</Text>
-                </TouchableOpacity>
+                  {loadingPersona === 'donor' ? (
+                    <View className="py-2 items-center">
+                      <ActivityIndicator size="small" color="#990011" />
+                      <Text className="text-[9px] font-bold text-[#990011] mt-1">Connecting</Text>
+                    </View>
+                  ) : (
+                    <>
+                      <Heart color="#990011" width={16} height={16} strokeWidth={2.4} />
+                      <Text className="text-xs font-black text-slate-800 mt-1">
+                        Donor
+                      </Text>
+                      <Text className="text-[10px] text-slate-400">Amara (O+)</Text>
+                    </>
+                  )}
+                </BouncyPressable>
 
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  onPress={() => switchPersona('advocate')}
-                  className="flex-1 bg-slate-50 border border-slate-200 py-2.5 px-1 rounded-2xl items-center shadow-xs"
+                <BouncyPressable
+                  onPress={() => handleSwitchPersona('advocate')}
+                  disabled={!!loadingPersona}
+                  className={`flex-1 bg-slate-50 border py-2.5 px-1 rounded-2xl items-center shadow-xs ${
+                    loadingPersona === 'advocate'
+                      ? 'border-amber-600 bg-amber-50/50'
+                      : 'border-slate-200'
+                  }`}
                 >
-                  <UserIcon color="#b45309" width={16} height={16} strokeWidth={2.4} />
-                  <Text className="text-xs font-black text-slate-800 mt-1">
-                    Advocate
-                  </Text>
-                  <Text className="text-[10px] text-slate-400">Bolanle</Text>
-                </TouchableOpacity>
+                  {loadingPersona === 'advocate' ? (
+                    <View className="py-2 items-center">
+                      <ActivityIndicator size="small" color="#b45309" />
+                      <Text className="text-[9px] font-bold text-amber-700 mt-1">Connecting</Text>
+                    </View>
+                  ) : (
+                    <>
+                      <UserIcon color="#b45309" width={16} height={16} strokeWidth={2.4} />
+                      <Text className="text-xs font-black text-slate-800 mt-1">
+                        Advocate
+                      </Text>
+                      <Text className="text-[10px] text-slate-400">Bolanle</Text>
+                    </>
+                  )}
+                </BouncyPressable>
 
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  onPress={() => switchPersona('hospital')}
-                  className="flex-1 bg-slate-50 border border-slate-200 py-2.5 px-1 rounded-2xl items-center shadow-xs"
+                <BouncyPressable
+                  onPress={() => handleSwitchPersona('hospital')}
+                  disabled={!!loadingPersona}
+                  className={`flex-1 bg-slate-50 border py-2.5 px-1 rounded-2xl items-center shadow-xs ${
+                    loadingPersona === 'hospital'
+                      ? 'border-emerald-600 bg-emerald-50/50'
+                      : 'border-slate-200'
+                  }`}
                 >
-                  <Hospital color="#047857" width={16} height={16} strokeWidth={2.4} />
-                  <Text className="text-xs font-black text-slate-800 mt-1">
-                    Hospital
-                  </Text>
-                  <Text className="text-[10px] text-slate-400">LUTH</Text>
-                </TouchableOpacity>
+                  {loadingPersona === 'hospital' ? (
+                    <View className="py-2 items-center">
+                      <ActivityIndicator size="small" color="#047857" />
+                      <Text className="text-[9px] font-bold text-emerald-700 mt-1">Connecting</Text>
+                    </View>
+                  ) : (
+                    <>
+                      <Hospital color="#047857" width={16} height={16} strokeWidth={2.4} />
+                      <Text className="text-xs font-black text-slate-800 mt-1">
+                        Hospital
+                      </Text>
+                      <Text className="text-[10px] text-slate-400">LUTH</Text>
+                    </>
+                  )}
+                </BouncyPressable>
               </View>
             </View>
           </View>

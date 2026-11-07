@@ -20,6 +20,7 @@ import {
   Shield,
   Check,
 } from '../../components/Icons';
+import { BouncyPressable, PulseBeacon } from '../../components/MicroInteractions';
 
 const ALL_BLOOD_GROUPS = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
 
@@ -195,8 +196,9 @@ export const HospitalHomeScreen: React.FC<{ navigation: any }> = ({
               Manage Blood Group Shortages
             </Text>
           </View>
-          <View className="bg-rose-100 px-2 py-0.5 rounded-full">
-            <Text className="text-[10px] font-black text-rose-800">
+          <View className="bg-rose-100 px-2 py-0.5 rounded-full flex-row items-center space-x-1">
+            <PulseBeacon color="#be123c" size={5} />
+            <Text className="text-[10px] font-black text-rose-800 ml-1">
               {isSavingShortages ? 'SAVING...' : `${neededBloodTypes.length} DEFICITS`}
             </Text>
           </View>
@@ -211,9 +213,8 @@ export const HospitalHomeScreen: React.FC<{ navigation: any }> = ({
           {ALL_BLOOD_GROUPS.map((type) => {
             const isDeficit = neededBloodTypes.includes(type);
             return (
-              <TouchableOpacity
+              <BouncyPressable
                 key={type}
-                activeOpacity={0.8}
                 onPress={() => handleToggleBloodShortage(type)}
                 className={`px-3 py-2 rounded-xl border flex-row items-center shadow-xs ${
                   isDeficit
@@ -233,7 +234,7 @@ export const HospitalHomeScreen: React.FC<{ navigation: any }> = ({
                     <Text className="text-[9px] text-white font-bold">NEEDED</Text>
                   </View>
                 )}
-              </TouchableOpacity>
+              </BouncyPressable>
             );
           })}
         </View>
@@ -264,14 +265,14 @@ export const HospitalHomeScreen: React.FC<{ navigation: any }> = ({
         </View>
       </View>
 
-      <TouchableOpacity
+      <BouncyPressable
         onPress={() => navigation.navigate('HospitalQueue')}
-        className="bg-slate-900 py-3.5 rounded-2xl items-center shadow active:opacity-90"
+        className="bg-slate-900 py-3.5 rounded-2xl items-center shadow"
       >
         <Text className="text-white font-black text-xs tracking-wide">
           Open Clinical Screening Queue →
         </Text>
-      </TouchableOpacity>
+      </BouncyPressable>
     </ScrollView>
   );
 };

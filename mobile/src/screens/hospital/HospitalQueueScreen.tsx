@@ -21,11 +21,17 @@ import {
   Shield,
   WarningTriangle,
 } from '../../components/Icons';
+import {
+  BouncyPressable,
+  ShimmerCard,
+  ButtonLoadingContent,
+} from '../../components/MicroInteractions';
 
 export const HospitalQueueScreen: React.FC<{ navigation: any }> = ({
   navigation,
 }) => {
   const [queue, setQueue] = useState<any[]>([]);
+  const [isLoadingQueue, setIsLoadingQueue] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
   // Scheduling Modal State
@@ -63,6 +69,7 @@ export const HospitalQueueScreen: React.FC<{ navigation: any }> = ({
     } catch (err) {
       console.log('Error loading queue:', err);
     } finally {
+      setIsLoadingQueue(false);
       setRefreshing(false);
     }
   };
@@ -157,7 +164,12 @@ export const HospitalQueueScreen: React.FC<{ navigation: any }> = ({
 
       {/* Queue Cards */}
       <View className="space-y-3">
-        {queue.length === 0 ? (
+        {isLoadingQueue ? (
+          <>
+            <ShimmerCard height={150} />
+            <ShimmerCard height={150} />
+          </>
+        ) : queue.length === 0 ? (
           <View className="bg-white rounded-2xl p-6 border border-slate-200 items-center justify-center">
             <Hospital color="#94a3b8" width={28} height={28} />
             <Text className="text-sm font-black text-slate-800 mt-2">
@@ -557,21 +569,23 @@ export const HospitalQueueScreen: React.FC<{ navigation: any }> = ({
               </View>
 
               {/* Submit CTA */}
-              <TouchableOpacity
+              <BouncyPressable
                 onPress={handleSubmitEvaluation}
                 disabled={isSubmittingEval}
                 className={`py-3.5 rounded-2xl items-center shadow-md mb-2 ${
                   evalDecision === 'passed' ? 'bg-[#990011]' : 'bg-slate-900'
                 }`}
               >
-                <Text className="text-white font-black text-xs">
-                  {isSubmittingEval
-                    ? 'Submitting...'
-                    : evalDecision === 'passed'
-                    ? 'Confirm Blood Draw & Award Vein of Hope'
-                    : 'Submit Deferral (Negative Rating, No Award)'}
-                </Text>
-              </TouchableOpacity>
+                <ButtonLoadingContent
+                  loading={isSubmittingEval}
+                  loadingText="Recording Clinical Evaluation..."
+                  defaultText={
+                    evalDecision === 'passed'
+                      ? 'Confirm Blood Draw & Award Vein of Hope'
+                      : 'Submit Deferral (Negative Rating, No Award)'
+                  }
+                />
+              </BouncyPressable>
 
               <TouchableOpacity
                 onPress={() => setLabEvalApp(null)}

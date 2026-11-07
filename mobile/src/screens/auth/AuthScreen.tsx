@@ -13,6 +13,7 @@ import {
 import { Heart, User, Hospital, Shield, NavArrowRight } from '../../components/Icons';
 import { useAuth } from '../../context/AuthContext';
 import { apiClient } from '../../api/client';
+import { BouncyPressable, ButtonLoadingContent } from '../../components/MicroInteractions';
 
 interface AuthScreenProps {
   onBackToIntro: () => void;
@@ -346,20 +347,17 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onBackToIntro }) => {
           )}
 
           {/* Submit Button */}
-          <TouchableOpacity
-            activeOpacity={0.85}
+          <BouncyPressable
             onPress={handleSubmit}
             disabled={loading}
             className="bg-[#990011] py-3.5 rounded-full items-center justify-center shadow-md mt-2"
           >
-            {loading ? (
-              <ActivityIndicator color="#ffffff" size="small" />
-            ) : (
-              <Text className="text-white font-black text-xs">
-                {mode === 'login' ? 'Sign In' : 'Create Account'}
-              </Text>
-            )}
-          </TouchableOpacity>
+            <ButtonLoadingContent
+              loading={loading}
+              loadingText={mode === 'login' ? 'Signing In...' : 'Creating Account...'}
+              defaultText={mode === 'login' ? 'Sign In' : 'Create Account'}
+            />
+          </BouncyPressable>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
