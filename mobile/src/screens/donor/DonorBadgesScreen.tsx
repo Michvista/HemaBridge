@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Modal,
   Dimensions,
+  PanResponder,
 } from 'react-native';
 import { apiClient } from '../../api/client';
 import { Medal, Shield, Heart, Check, Clock, WarningTriangle, NavArrowRight } from '../../components/Icons';
@@ -101,9 +102,9 @@ const BADGES_DATABASE: GameBadge[] = [
     level: 3,
     earned: false,
     whatItRepresents:
-      'Sustained lifeline resilience. Recognizes donors who return voluntarily cycle after cycle once their biological cooldown ends.',
+      'Sustained lifeline resilience. Recognizes donors who return voluntarily cycle after cycle once their recovery period completes.',
     howToGet: 'Complete 3 verified voluntary blood donations over your donor lifecycle.',
-    estimatedTime: '~9 - 12 months (respecting 3mo male / 4mo female cooldowns)',
+    estimatedTime: '~9 - 12 months (respecting healthy recovery windows)',
     currentProgress: 1,
     maxProgress: 3,
     unit: 'donations completed',
@@ -152,6 +153,18 @@ export const DonorBadgesScreen: React.FC = () => {
   const [badges, setBadges] = useState<GameBadge[]>(BADGES_DATABASE);
   const [filter, setFilter] = useState<'all' | 'unlocked' | 'locked'>('all');
   const [selectedBadge, setSelectedBadge] = useState<GameBadge | null>(null);
+
+  const drawerPanResponder = React.useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 10,
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 30) {
+          setSelectedBadge(null);
+        }
+      },
+    }),
+  ).current;
 
   const unlockedCount = badges.filter((b) => b.earned).length;
   const totalCount = badges.length;
@@ -374,17 +387,27 @@ export const DonorBadgesScreen: React.FC = () => {
         animationType="slide"
         onRequestClose={() => setSelectedBadge(null)}
       >
-        <View className="flex-1 bg-black/60 justify-end">
-          <View className="bg-white rounded-t-3xl p-5 max-h-[82%]">
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setSelectedBadge(null)}
+          className="flex-1 bg-black/60 justify-end"
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            className="bg-white rounded-t-3xl p-5 max-h-[82%]"
+          >
             {selectedBadge && (
               <ScrollView showsVerticalScrollIndicator={false}>
                 {/* Drag Drawer Handle */}
-                <TouchableOpacity
-                  onPress={() => setSelectedBadge(null)}
-                  className="items-center py-1 mb-2"
+                <View
+                  {...drawerPanResponder.panHandlers}
+                  className="items-center py-2 mb-2"
                 >
                   <View className="w-12 h-1.5 bg-slate-300 rounded-full" />
-                </TouchableOpacity>
+                  <Text className="text-[10px] text-slate-400 font-medium mt-1">
+                    Drag down or tap backdrop to close
+                  </Text>
+                </View>
 
                 <View className="items-center mb-3">
                   <View
@@ -456,8 +479,8 @@ export const DonorBadgesScreen: React.FC = () => {
                 </TouchableOpacity>
               </ScrollView>
             )}
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
     </ScrollView>
   );

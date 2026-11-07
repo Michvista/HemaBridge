@@ -30,10 +30,10 @@ export const CooldownWidget: React.FC<CooldownWidgetProps> = ({
           </View>
           <View>
             <Text className="text-sm font-bold text-slate-900">
-              Medical Cooldown Status
+              Donation Recovery Period
             </Text>
             <Text className="text-[11px] text-slate-500">
-              {gender === 'male' ? '3 months (Male interval)' : '4 months (Female interval)'}
+              {gender === 'male' ? '90-day recovery cycle' : '120-day recovery cycle'}
             </Text>
           </View>
         </View>
@@ -59,14 +59,14 @@ export const CooldownWidget: React.FC<CooldownWidgetProps> = ({
         <View
           style={{ width: `${progressPercent}%` }}
           className={`h-full rounded-full ${
-            eligible ? 'bg-emerald-500' : 'bg-rose-600'
+            eligible ? 'bg-emerald-500' : 'bg-[#990011]'
           }`}
         />
       </View>
 
       <View className="flex-row items-center justify-between">
         <Text className="text-[11px] text-slate-400">
-          {progressPercent}% interval elapsed
+          {progressPercent}% completed
         </Text>
         <Text className="text-[11px] text-slate-600 font-medium">
           {eligible

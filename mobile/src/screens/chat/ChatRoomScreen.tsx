@@ -108,6 +108,7 @@ export const ChatRoomScreen: React.FC<{ route: any; navigation: any }> = ({
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 95 : 0}
       className="flex-1 bg-slate-50"
     >
       {/* Participant Sub-Header */}
@@ -153,6 +154,8 @@ export const ChatRoomScreen: React.FC<{ route: any; navigation: any }> = ({
         className="flex-1 px-4 pt-2"
         contentContainerStyle={{ paddingBottom: 24, flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
       >
         {activeMessages.length === 0 ? (
           <View className="flex-1 items-center justify-center py-12">

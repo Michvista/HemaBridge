@@ -119,7 +119,7 @@ export const Header: React.FC = () => {
               <View className="flex-1">
                 <Text className="font-bold text-slate-900">Amara Miller (Donor)</Text>
                 <Text className="text-[11px] text-slate-500">
-                  Blood Type O+ • Ikeja, Lagos • Cooldown active
+                  Blood Type O+ • Ikeja, Lagos • Eligible Soon
                 </Text>
               </View>
             </TouchableOpacity>

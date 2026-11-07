@@ -18,7 +18,10 @@ import {
   Activity,
   User as UserIcon,
   Shield,
+  Check,
 } from '../../components/Icons';
+
+const ALL_BLOOD_GROUPS = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
 
 export const HospitalHomeScreen: React.FC<{ navigation: any }> = ({
   navigation,
@@ -31,6 +34,13 @@ export const HospitalHomeScreen: React.FC<{ navigation: any }> = ({
   const [requestDonorsActive, setRequestDonorsActive] = useState<boolean>(
     hospital?.requestDonorsActive ?? true,
   );
+  const [neededBloodTypes, setNeededBloodTypes] = useState<string[]>(
+    hospital?.neededBloodTypes && hospital.neededBloodTypes.length > 0
+      ? hospital.neededBloodTypes
+      : ['O+', 'O-', 'A-'],
+  );
+  const [isSavingShortages, setIsSavingShortages] = useState(false);
+
   const [stats, setStats] = useState({
     activeShortages: 3,
     intakeQueueCount: 4,
@@ -54,6 +64,33 @@ export const HospitalHomeScreen: React.FC<{ navigation: any }> = ({
     } catch (err) {
       setRequestDonorsActive(!value);
       Alert.alert('Error', 'Unable to update request broadcast status.');
+    }
+  };
+
+  const handleToggleBloodShortage = async (type: string) => {
+    let updated: string[];
+    if (neededBloodTypes.includes(type)) {
+      if (neededBloodTypes.length === 1) {
+        Alert.alert(
+          'Minimum Shortage Alert',
+          'At least one blood group must remain on alert while emergency broadcast is enabled.',
+        );
+        return;
+      }
+      updated = neededBloodTypes.filter((t) => t !== type);
+    } else {
+      updated = [...neededBloodTypes, type];
+    }
+
+    setNeededBloodTypes(updated);
+    setIsSavingShortages(true);
+    try {
+      await apiClient.patch('/hospitals/status', { neededBloodTypes: updated });
+    } catch (err) {
+      Alert.alert('Error', 'Unable to update blood shortage list.');
+      setNeededBloodTypes(neededBloodTypes);
+    } finally {
+      setIsSavingShortages(false);
     }
   };
 
@@ -98,7 +135,7 @@ export const HospitalHomeScreen: React.FC<{ navigation: any }> = ({
         </View>
 
         <Text className="text-slate-500 text-xs mt-2 leading-5">
-          Licensed Transfusion Center • Accreditation Lic: <Text className="font-mono text-slate-700 font-bold">{hospital?.operatingLicence || 'HEFAMAA-LG-001'}</Text>
+          Licensed Transfusion Center • Facility Code: <Text className="font-mono text-slate-700 font-bold">{hospital?.operatingLicence || 'MOH-REG-001'}</Text>
         </Text>
       </View>
 
@@ -136,7 +173,7 @@ export const HospitalHomeScreen: React.FC<{ navigation: any }> = ({
             </Text>
             <Text className="text-xs text-slate-500 mt-0.5">
               {requestDonorsActive
-                ? 'Actively broadcasting O+, O-, A- urgent shortages to nearby donors'
+                ? `Broadcasting urgent shortages (${neededBloodTypes.join(', ')}) to nearby donors`
                 : 'Shortage broadcast is currently paused'}
             </Text>
           </View>
@@ -149,32 +186,56 @@ export const HospitalHomeScreen: React.FC<{ navigation: any }> = ({
         </View>
       </View>
 
-      {/* Hospital Shortage Alert Panel */}
+      {/* Hospital Shortage Alert Panel & Interactive Editor */}
       <View className="bg-rose-50 border border-rose-200 rounded-3xl p-4 mb-4">
         <View className="flex-row items-center justify-between mb-2">
           <View className="flex-row items-center">
             <WarningTriangle color="#990011" height={18} width={18} strokeWidth={2.5} />
             <Text className="text-xs font-black text-[#990011] uppercase tracking-wider ml-1.5">
-              Current Critical Shortage
+              Manage Blood Group Shortages
             </Text>
           </View>
           <View className="bg-rose-100 px-2 py-0.5 rounded-full">
-            <Text className="text-[10px] font-black text-rose-800">DEFICIT</Text>
+            <Text className="text-[10px] font-black text-rose-800">
+              {isSavingShortages ? 'SAVING...' : `${neededBloodTypes.length} DEFICITS`}
+            </Text>
           </View>
         </View>
 
-        <Text className="text-xs text-slate-700 leading-4">
-          Red alert broadcasted to Hemabridge network:
+        <Text className="text-xs text-slate-700 leading-4 mb-3">
+          Tap any blood group below to add or remove it from your hospital's critical shortage radar:
         </Text>
-        <View className="flex-row gap-2 mt-2">
-          {['O+', 'O-', 'A-'].map((type) => (
-            <View
-              key={type}
-              className="bg-white border border-rose-300 px-3 py-1.5 rounded-xl shadow-xs"
-            >
-              <Text className="text-xs font-black text-[#990011]">{type}</Text>
-            </View>
-          ))}
+
+        {/* Interactive Blood Group Shortage Toggles */}
+        <View className="flex-row flex-wrap gap-2">
+          {ALL_BLOOD_GROUPS.map((type) => {
+            const isDeficit = neededBloodTypes.includes(type);
+            return (
+              <TouchableOpacity
+                key={type}
+                activeOpacity={0.8}
+                onPress={() => handleToggleBloodShortage(type)}
+                className={`px-3 py-2 rounded-xl border flex-row items-center shadow-xs ${
+                  isDeficit
+                    ? 'bg-[#990011] border-[#990011]'
+                    : 'bg-white border-slate-300'
+                }`}
+              >
+                <Text
+                  className={`text-xs font-black ${
+                    isDeficit ? 'text-white' : 'text-slate-700'
+                  }`}
+                >
+                  {type}
+                </Text>
+                {isDeficit && (
+                  <View className="ml-1.5 bg-white/20 rounded-full px-1">
+                    <Text className="text-[9px] text-white font-bold">NEEDED</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
 
@@ -204,10 +265,10 @@ export const HospitalHomeScreen: React.FC<{ navigation: any }> = ({
       </View>
 
       <TouchableOpacity
-        onPress={() => navigation.navigate('Queue')}
-        className="bg-slate-900 py-3.5 rounded-2xl items-center shadow"
+        onPress={() => navigation.navigate('HospitalQueue')}
+        className="bg-slate-900 py-3.5 rounded-2xl items-center shadow active:opacity-90"
       >
-        <Text className="text-white font-black text-xs">
+        <Text className="text-white font-black text-xs tracking-wide">
           Open Clinical Screening Queue →
         </Text>
       </TouchableOpacity>

@@ -119,8 +119,8 @@ export const HospitalQueueScreen: React.FC<{ navigation: any }> = ({
       Alert.alert(
         evalDecision === 'passed' ? 'Donation Confirmed & Awarded' : 'Screening Deferred',
         evalDecision === 'passed'
-          ? `Lab confirmed safe blood collection. ${hospitalRating}★ rating and "Vein of Hope" badge awarded to ${labEvalApp.donor?.name}!`
-          : `Donor marked as deferred. Record logged with ${hospitalRating}★ rating and no badge issued.`,
+          ? `Lab confirmed safe blood collection. ${hospitalRating}/5 rating and "Vein of Hope" badge awarded to ${labEvalApp.donor?.name}!`
+          : `Donor marked as deferred. Record logged with ${hospitalRating}/5 rating and no badge issued.`,
       );
       loadQueue();
     } catch (err) {
@@ -225,8 +225,8 @@ export const HospitalQueueScreen: React.FC<{ navigation: any }> = ({
                             Screening Passed • {app.unitsCollected || 1} Unit Collected
                           </Text>
                         </View>
-                        <Text className="text-[11px] font-black text-amber-600">
-                          {'★'.repeat(app.hospitalRating || 5)} ({app.hospitalRating || 5}/5)
+                        <Text className="text-[11px] font-black text-amber-700">
+                          Score: {app.hospitalRating || 5}/5
                         </Text>
                       </View>
                       <Text className="text-[11px] text-slate-600 leading-4">
@@ -245,7 +245,7 @@ export const HospitalQueueScreen: React.FC<{ navigation: any }> = ({
                           </Text>
                         </View>
                         <Text className="text-[11px] font-black text-slate-500">
-                          Rating: {app.hospitalRating || 2}★
+                          Rating: {app.hospitalRating || 2}/5
                         </Text>
                       </View>
                       <Text className="text-[11px] text-slate-600 leading-4">
@@ -307,7 +307,7 @@ export const HospitalQueueScreen: React.FC<{ navigation: any }> = ({
                   {isCompleted && (
                     <View className="flex-1 bg-emerald-50 border border-emerald-200 py-2.5 rounded-xl items-center">
                       <Text className="text-xs font-bold text-emerald-800">
-                        Award Issued ✓
+                        Award Issued
                       </Text>
                     </View>
                   )}
@@ -432,7 +432,7 @@ export const HospitalQueueScreen: React.FC<{ navigation: any }> = ({
                         evalDecision === 'passed' ? 'text-white' : 'text-slate-700'
                       }`}
                     >
-                      ✓ Passed & Certified
+                      Passed & Certified
                     </Text>
                   </TouchableOpacity>
 
@@ -452,7 +452,7 @@ export const HospitalQueueScreen: React.FC<{ navigation: any }> = ({
                         evalDecision === 'failed' ? 'text-white' : 'text-slate-700'
                       }`}
                     >
-                      ✗ Deferred / Ineligible
+                      Deferred / Ineligible
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -491,7 +491,7 @@ export const HospitalQueueScreen: React.FC<{ navigation: any }> = ({
                     }`}
                   >
                     <Text className={`text-[11px] font-bold ${hivClear ? 'text-emerald-800' : 'text-rose-800'}`}>
-                      HIV: {hivClear ? 'Non-Reactive ✓' : 'Reactive ✗'}
+                      HIV: {hivClear ? 'Non-Reactive' : 'Reactive'}
                     </Text>
                   </TouchableOpacity>
 
@@ -502,7 +502,7 @@ export const HospitalQueueScreen: React.FC<{ navigation: any }> = ({
                     }`}
                   >
                     <Text className={`text-[11px] font-bold ${hepBClear ? 'text-emerald-800' : 'text-rose-800'}`}>
-                      Hep B: {hepBClear ? 'Non-Reactive ✓' : 'Reactive ✗'}
+                      Hep B: {hepBClear ? 'Non-Reactive' : 'Reactive'}
                     </Text>
                   </TouchableOpacity>
 
@@ -513,7 +513,7 @@ export const HospitalQueueScreen: React.FC<{ navigation: any }> = ({
                     }`}
                   >
                     <Text className={`text-[11px] font-bold ${syphilisClear ? 'text-emerald-800' : 'text-rose-800'}`}>
-                      Syphilis: {syphilisClear ? 'Non-Reactive ✓' : 'Reactive ✗'}
+                      Syphilis: {syphilisClear ? 'Non-Reactive' : 'Reactive'}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -535,8 +535,8 @@ export const HospitalQueueScreen: React.FC<{ navigation: any }> = ({
                           : 'bg-slate-50 border-slate-200'
                       }`}
                     >
-                      <Text className="text-sm font-black text-amber-900">
-                        ★ {star}
+                      <Text className="text-xs font-black text-amber-900">
+                        {star} / 5
                       </Text>
                     </TouchableOpacity>
                   ))}

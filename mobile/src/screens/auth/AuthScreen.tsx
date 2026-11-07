@@ -70,7 +70,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onBackToIntro }) => {
           payload.bloodType = bloodType;
           payload.gender = 'female';
         } else if (selectedRole === 'hospital') {
-          payload.operatingLicence = 'HEFAMAA-VERIFIED';
+          payload.operatingLicence = 'MOH-VERIFIED';
         }
 
         const res = await apiClient.post('/auth/register', payload);
@@ -79,11 +79,9 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onBackToIntro }) => {
         }
       }
     } catch (err: any) {
-      console.log('Auth error:', err?.response?.data || err.message);
-      // If network fails, offer instant fallback to demo persona
       const msg =
         err?.response?.data?.message ||
-        'Unable to connect to auth server. Use the 1-Tap Demo buttons below to test immediately!';
+        'Unable to complete request. Please check your network or try Quick Login.';
       setErrorMsg(typeof msg === 'string' ? msg : JSON.stringify(msg));
     } finally {
       setLoading(false);
@@ -93,6 +91,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onBackToIntro }) => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
       className="flex-1 bg-slate-50"
     >
       <ScrollView
@@ -102,14 +101,14 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onBackToIntro }) => {
         {/* Back Button */}
         <TouchableOpacity
           onPress={onBackToIntro}
-          className="self-start py-1.5 px-3 rounded-xl bg-slate-200/80 mb-4"
+          className="self-start py-2 px-3.5 rounded-full bg-white border border-slate-200 mb-4 shadow-sm"
         >
-          <Text className="text-xs font-bold text-slate-700">← Back to Overview</Text>
+          <Text className="text-xs font-bold text-slate-700">← Back</Text>
         </TouchableOpacity>
 
         {/* Brand Header */}
         <View className="mb-5">
-          <View className="flex-row items-center mb-1.5">
+          <View className="flex-row items-center mb-1">
             <View className="w-8 h-8 rounded-xl bg-[#990011] items-center justify-center mr-2">
               <Heart color="#ffffff" width={16} height={16} strokeWidth={2.5} />
             </View>
@@ -121,12 +120,12 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onBackToIntro }) => {
           <Text className="text-xs text-slate-500 font-medium mt-0.5">
             {mode === 'login'
               ? 'Sign in to access your blood donor, advocate, or hospital console'
-              : 'Join the Nigerian emergency blood lifeline network'}
+              : 'Join the emergency blood lifeline network'}
           </Text>
         </View>
 
         {/* Mode Switch (Sign In / Register) */}
-        <View className="flex-row bg-slate-200 p-1 rounded-2xl mb-4">
+        <View className="flex-row bg-slate-200/80 p-1 rounded-2xl mb-4">
           <TouchableOpacity
             onPress={() => {
               setMode('login');
@@ -164,56 +163,52 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onBackToIntro }) => {
           </TouchableOpacity>
         </View>
 
-        {/* 1-Tap Quick Demo Logins Banner */}
-        <View className="bg-rose-50 border border-rose-200 rounded-2xl p-4 mb-5">
-          <Text className="text-xs font-black text-rose-900 uppercase tracking-wider mb-1">
-            ⚡ 1-Tap Test Logins (Seeded Personas)
-          </Text>
-          <Text className="text-[11px] text-rose-800 mb-3 leading-4">
-            Instant evaluation on your phone without typing passwords:
+        {/* Quick Access Roles */}
+        <View className="bg-white border border-slate-200 rounded-2xl p-4 mb-4 shadow-sm">
+          <Text className="text-xs font-black text-slate-800 uppercase tracking-wider mb-2">
+            Quick Login
           </Text>
 
           <View className="flex-row gap-2">
             <TouchableOpacity
               onPress={() => handleQuickLogin('donor')}
-              className="flex-1 bg-white border border-rose-300 py-2 px-2 rounded-xl items-center"
+              className="flex-1 bg-slate-50 border border-slate-200 py-2.5 px-2 rounded-xl items-center"
             >
               <Heart color="#990011" width={14} height={14} strokeWidth={2.5} />
-              <Text className="text-[10px] font-black text-rose-950 mt-1">
+              <Text className="text-xs font-black text-slate-800 mt-1">
                 Amara (O+)
               </Text>
-              <Text className="text-[9px] text-slate-500">Donor</Text>
+              <Text className="text-[10px] text-slate-400">Donor</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={() => handleQuickLogin('advocate')}
-              className="flex-1 bg-white border border-amber-300 py-2 px-2 rounded-xl items-center"
+              className="flex-1 bg-slate-50 border border-slate-200 py-2.5 px-2 rounded-xl items-center"
             >
               <User color="#b45309" width={14} height={14} strokeWidth={2.5} />
-              <Text className="text-[10px] font-black text-amber-950 mt-1">
+              <Text className="text-xs font-black text-slate-800 mt-1">
                 Bolanle
               </Text>
-              <Text className="text-[9px] text-slate-500">Advocate</Text>
+              <Text className="text-[10px] text-slate-400">Advocate</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={() => handleQuickLogin('hospital')}
-              className="flex-1 bg-white border border-blue-300 py-2 px-2 rounded-xl items-center"
+              className="flex-1 bg-slate-50 border border-slate-200 py-2.5 px-2 rounded-xl items-center"
             >
-              <Hospital color="#1d4ed8" width={14} height={14} strokeWidth={2.5} />
-              <Text className="text-[10px] font-black text-blue-950 mt-1">
-                LUTH Desk
+              <Hospital color="#047857" width={14} height={14} strokeWidth={2.5} />
+              <Text className="text-xs font-black text-slate-800 mt-1">
+                LUTH
               </Text>
-              <Text className="text-[9px] text-slate-500">Hospital</Text>
+              <Text className="text-[10px] text-slate-400">Hospital</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Form Container */}
         <View className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm mb-5">
-          {/* Error Message */}
           {errorMsg && (
-            <View className="bg-rose-100 border border-rose-300 rounded-xl p-3 mb-4">
+            <View className="bg-rose-50 border border-rose-200 rounded-xl p-3 mb-4">
               <Text className="text-xs font-bold text-rose-800">{errorMsg}</Text>
             </View>
           )}
@@ -270,8 +265,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onBackToIntro }) => {
               <TextInput
                 value={name}
                 onChangeText={setName}
-                placeholder="e.g. Dr. Ngozi Eze"
-                className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-medium"
+                placeholder="Full Name"
+                className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 font-medium"
               />
             </View>
           )}
@@ -285,7 +280,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onBackToIntro }) => {
               placeholder="e.g. amara@hemabridge.com"
               keyboardType="email-address"
               autoCapitalize="none"
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-medium"
+              className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 font-medium"
             />
           </View>
 
@@ -295,19 +290,19 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onBackToIntro }) => {
             <TextInput
               value={password}
               onChangeText={setPassword}
-              placeholder="••••••••"
+              placeholder="Password"
               secureTextEntry
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-medium"
+              className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 font-medium"
             />
           </View>
 
           {/* Blood Type Selector (Donor Register Mode) */}
           {mode === 'register' && selectedRole === 'donor' && (
             <View className="mb-3">
-              <Text className="text-xs font-bold text-slate-700 mb-1.5">
+              <Text className="text-xs font-bold text-slate-700 mb-1.5 text-center">
                 Blood Group (ABO & Rhesus)
               </Text>
-              <View className="flex-row flex-wrap gap-1.5">
+              <View className="flex-row flex-wrap justify-center gap-1.5">
                 {bloodTypes.map((bt) => {
                   const isSel = bloodType === bt;
                   return (
@@ -338,14 +333,14 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onBackToIntro }) => {
           {mode === 'register' && (
             <View className="mb-4">
               <Text className="text-xs font-bold text-slate-700 mb-1">
-                Phone Number (Protected by Privacy Shield)
+                Phone Number
               </Text>
               <TextInput
                 value={phone}
                 onChangeText={setPhone}
                 placeholder="+234 803 123 4567"
                 keyboardType="phone-pad"
-                className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-medium"
+                className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 font-medium"
               />
             </View>
           )}
@@ -355,13 +350,13 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onBackToIntro }) => {
             activeOpacity={0.85}
             onPress={handleSubmit}
             disabled={loading}
-            className="bg-[#990011] py-3.5 rounded-2xl items-center justify-center shadow-md mt-2"
+            className="bg-[#990011] py-3.5 rounded-full items-center justify-center shadow-md mt-2"
           >
             {loading ? (
               <ActivityIndicator color="#ffffff" size="small" />
             ) : (
-              <Text className="text-white font-black text-sm">
-                {mode === 'login' ? 'Sign In to Hemabridge' : 'Create Free Account'}
+              <Text className="text-white font-black text-xs">
+                {mode === 'login' ? 'Sign In' : 'Create Account'}
               </Text>
             )}
           </TouchableOpacity>

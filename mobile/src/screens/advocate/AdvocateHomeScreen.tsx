@@ -7,6 +7,7 @@ import {
   TextInput,
   Modal,
   Alert,
+  PanResponder,
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { apiClient } from '../../api/client';
@@ -41,6 +42,30 @@ export const AdvocateHomeScreen: React.FC<{ navigation: any }> = ({
     'Urgent replacement units needed for post-op emergency transfusion.',
   );
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  const requestDrawerPanResponder = React.useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 10,
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 30) {
+          setRequestModalVisible(false);
+        }
+      },
+    }),
+  ).current;
+
+  const badgeGuidePanResponder = React.useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 10,
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 30) {
+          setBadgeGuideModalVisible(false);
+        }
+      },
+    }),
+  ).current;
 
   const bloodTypes = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
 
@@ -113,9 +138,9 @@ export const AdvocateHomeScreen: React.FC<{ navigation: any }> = ({
               </Text>
             </View>
           </View>
-          <View className="bg-amber-100 border border-amber-200 px-2.5 py-1 rounded-full">
-            <Text className="text-amber-900 font-black text-[10px]">
-              CONFIDENTIAL
+          <View className="bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
+            <Text className="text-amber-900 font-bold text-[10px]">
+              Direct Match
             </Text>
           </View>
         </View>
@@ -137,53 +162,52 @@ export const AdvocateHomeScreen: React.FC<{ navigation: any }> = ({
             </Text>
           </View>
           <Text className="text-[11px] font-bold text-[#990011]">
-            View Safety Lore Guide →
+            View Safety Guide →
           </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Blood Group Filter */}
-      <Text className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2">
-        Patient Needed Blood Type (ABO & Rh)
-      </Text>
+      {/* Patient Needed Blood Type (CENTERED) */}
+      <View className="mb-4 items-center">
+        <Text className="text-xs font-black text-slate-600 uppercase tracking-wider mb-2.5 text-center">
+          Patient Needed Blood Group
+        </Text>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        className="mb-4"
-        contentContainerStyle={{ paddingRight: 8 }}
-      >
-        {bloodTypes.map((type) => {
-          const isSelected = selectedBloodType === type;
-          return (
-            <TouchableOpacity
-              key={type}
-              onPress={() => setSelectedBloodType(type)}
-              className={`mr-2 px-4 py-2 rounded-2xl border ${
-                isSelected
-                  ? 'bg-[#990011] border-[#990011] shadow-sm'
-                  : 'bg-white border-slate-200'
-              }`}
-            >
-              <Text
-                className={`text-sm font-black ${
-                  isSelected ? 'text-white' : 'text-slate-700'
+        {/* Centered Blood Group Grid */}
+        <View className="flex-row flex-wrap justify-center gap-2 max-w-sm">
+          {bloodTypes.map((type) => {
+            const isSelected = selectedBloodType === type;
+            return (
+              <TouchableOpacity
+                key={type}
+                activeOpacity={0.8}
+                onPress={() => setSelectedBloodType(type)}
+                className={`min-w-[70px] py-2.5 px-3 rounded-2xl border items-center justify-center shadow-xs ${
+                  isSelected
+                    ? 'bg-[#990011] border-[#990011]'
+                    : 'bg-white border-slate-200'
                 }`}
               >
-                {type}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+                <Text
+                  className={`text-sm font-black ${
+                    isSelected ? 'text-white' : 'text-slate-800'
+                  }`}
+                >
+                  {type}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
 
       {/* Screened Donor Results Header */}
       <View className="flex-row items-center justify-between mb-2">
         <Text className="text-xs font-black text-slate-500 uppercase tracking-wider">
-          Screened Available Donors ({donors.length})
+          Available Donors ({donors.length})
         </Text>
         <Text className="text-[11px] text-emerald-700 font-bold">
-          ● Ready to Mobilize
+          Ready to Mobilize
         </Text>
       </View>
 
@@ -196,14 +220,14 @@ export const AdvocateHomeScreen: React.FC<{ navigation: any }> = ({
               No Direct Donors on Standby for {selectedBloodType}
             </Text>
             <Text className="text-xs text-slate-500 text-center mt-1">
-              Tap below to broadcast a network-wide distress alert to accredited hospitals and blood drives.
+              Broadcast an alert to accredited hospitals and emergency drives nearby.
             </Text>
             <TouchableOpacity
               onPress={() => {
                 setSelectedDonor(null);
                 setRequestModalVisible(true);
               }}
-              className="mt-4 bg-[#990011] px-4 py-2.5 rounded-xl"
+              className="mt-4 bg-[#990011] px-4 py-2.5 rounded-full"
             >
               <Text className="text-white text-xs font-bold">
                 Broadcast Emergency Request
@@ -247,12 +271,12 @@ export const AdvocateHomeScreen: React.FC<{ navigation: any }> = ({
                   </View>
                 </View>
 
-                {/* Location & Badge Lore Details */}
+                {/* Location & Badge Details */}
                 <View className="bg-slate-50 rounded-xl p-2.5 my-2 flex-row items-center justify-between">
                   <View className="flex-row items-center">
                     <Pin color="#64748b" width={13} height={13} />
                     <Text className="text-xs text-slate-600 font-medium ml-1">
-                      {dp?.area || 'Lagos'} ({dp?.state || 'Lagos State'})
+                      {dp?.area || 'Lagos'}
                     </Text>
                   </View>
 
@@ -309,16 +333,25 @@ export const AdvocateHomeScreen: React.FC<{ navigation: any }> = ({
         animationType="slide"
         onRequestClose={() => setRequestModalVisible(false)}
       >
-        <View className="flex-1 bg-black/60 justify-end">
-          <View className="bg-white rounded-t-3xl p-5">
-            {/* Drawer Drag-to-Dismiss Handle */}
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => setRequestModalVisible(false)}
-              className="items-center py-1.5 mb-2"
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setRequestModalVisible(false)}
+          className="flex-1 bg-black/60 justify-end"
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            className="bg-white rounded-t-3xl p-5"
+          >
+            {/* Drawer Drag Handle */}
+            <View
+              {...requestDrawerPanResponder.panHandlers}
+              className="items-center py-2 mb-2"
             >
               <View className="w-12 h-1.5 bg-slate-300 rounded-full" />
-            </TouchableOpacity>
+              <Text className="text-[10px] text-slate-400 font-medium mt-1">
+                Drag down or tap backdrop to close
+              </Text>
+            </View>
 
             <Text className="text-lg font-black text-slate-900 mb-0.5">
               Emergency Request to Connect
@@ -389,9 +422,9 @@ export const AdvocateHomeScreen: React.FC<{ navigation: any }> = ({
             <TouchableOpacity
               onPress={handleSendRequest}
               disabled={isSubmitting}
-              className="bg-[#990011] py-3.5 rounded-2xl items-center shadow-md mb-2"
+              className="bg-[#990011] py-3.5 rounded-full items-center shadow-md mb-2"
             >
-              <Text className="text-white font-black text-sm">
+              <Text className="text-white font-black text-xs">
                 {isSubmitting ? 'Dispatching...' : 'Confirm & Dispatch Request'}
               </Text>
             </TouchableOpacity>
@@ -401,41 +434,51 @@ export const AdvocateHomeScreen: React.FC<{ navigation: any }> = ({
               className="py-2 items-center"
             >
               <Text className="text-xs font-semibold text-slate-500">
-                Cancel / Close
+                Cancel
               </Text>
             </TouchableOpacity>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
 
-      {/* Advocate Vein of Hope Lore Guide Modal */}
+      {/* Advocate Safety Guide Modal */}
       <Modal
         visible={badgeGuideModalVisible}
         transparent
         animationType="slide"
         onRequestClose={() => setBadgeGuideModalVisible(false)}
       >
-        <View className="flex-1 bg-black/60 justify-end">
-          <View className="bg-white rounded-t-3xl p-6 max-h-[80%]">
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setBadgeGuideModalVisible(false)}
+          className="flex-1 bg-black/60 justify-end"
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            className="bg-white rounded-t-3xl p-6 max-h-[80%]"
+          >
             {/* Drawer Handle */}
-            <TouchableOpacity
-              onPress={() => setBadgeGuideModalVisible(false)}
-              className="items-center py-1 mb-3"
+            <View
+              {...badgeGuidePanResponder.panHandlers}
+              className="items-center py-2 mb-2"
             >
               <View className="w-12 h-1.5 bg-slate-300 rounded-full" />
-            </TouchableOpacity>
+              <Text className="text-[10px] text-slate-400 font-medium mt-1">
+                Drag down or tap backdrop to close
+              </Text>
+            </View>
 
             <Text className="text-xl font-black text-slate-900">
-              Why Donor Badges Matter to Patients
+              Donor Safety & Recognition Guide
             </Text>
             <Text className="text-xs text-slate-500 mt-1 mb-4">
-              A patient advocate guide to blood safety markers and honours in Nigeria
+              Understanding clinical safety markers and honours
             </Text>
 
             <ScrollView showsVerticalScrollIndicator={false}>
               <View className="bg-rose-50 border border-rose-100 rounded-2xl p-4 mb-3">
                 <Text className="text-xs font-black text-rose-900 mb-1">
-                  🥇 Vein of Hope Certified
+                  Vein of Hope Certified
                 </Text>
                 <Text className="text-xs text-rose-800 leading-5">
                   Awarded only when a donor completes lab-tested screening at an accredited hospital (e.g. LUTH). Verifies clean viral markers (non-reactive for HIV, Hepatitis B/C, and Syphilis) and normal hemoglobin.
@@ -444,33 +487,33 @@ export const AdvocateHomeScreen: React.FC<{ navigation: any }> = ({
 
               <View className="bg-amber-50 border border-amber-100 rounded-2xl p-4 mb-3">
                 <Text className="text-xs font-black text-amber-900 mb-1">
-                  🛡️ Silver Sentinel / Cooldown Verified
+                  Silver Sentinel (Recovery Verified)
                 </Text>
                 <Text className="text-xs text-amber-800 leading-5">
-                  Signifies that the donor is past their mandatory biological recovery interval (3 months for males, 4 months for females), ensuring their iron levels and plasma are optimal for the recipient.
+                  Signifies that the donor has completed the recommended recovery period (90 days for men, 120 days for women), ensuring optimal iron levels and vital health for safe donation.
                 </Text>
               </View>
 
               <View className="bg-slate-100 border border-slate-200 rounded-2xl p-4 mb-4">
                 <Text className="text-xs font-black text-slate-900 mb-1">
-                  ⚡ Emergency Vanguard
+                  Emergency Vanguard
                 </Text>
                 <Text className="text-xs text-slate-700 leading-5">
-                  Recognizes rapid-response donors who answered critical hospital shortage broadcasts when blood bank reserves hit zero.
+                  Recognizes rapid-response donors who answered hospital shortage broadcasts during emergency shortages.
                 </Text>
               </View>
 
               <TouchableOpacity
                 onPress={() => setBadgeGuideModalVisible(false)}
-                className="bg-slate-900 py-3.5 rounded-2xl items-center"
+                className="bg-slate-900 py-3.5 rounded-full items-center"
               >
                 <Text className="text-white font-black text-xs">
-                  Got It — Close Safety Guide
+                  Close Safety Guide
                 </Text>
               </TouchableOpacity>
             </ScrollView>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
     </ScrollView>
   );
